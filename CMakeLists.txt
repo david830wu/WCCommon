@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
-project({{ProjectName}}
-        VERSION {{Version}}
-        DESCRIPTION "{{Description}}"
+project(WCCommon
+        VERSION 1.0
+        DESCRIPTION "Frequently used small tools and functions"
         LANGUAGES C CXX
 )
 
@@ -20,7 +20,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # find and configure required package
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-find_package(Boost 1.70.0 REQUIRED COMPONENTS)
 
 add_subdirectory(src)
 add_subdirectory(tests)

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
-project({{ProjectName}}Test
-        VERSION {{Version}}
-        DESCRIPTION "{{ProjectName}} test cases"
+project(WCCommonTest
+        VERSION 1.0
+        DESCRIPTION "WCCommon test cases"
         LANGUAGES C CXX
 )
 
@@ -20,12 +20,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(Catch2 REQUIRED)
 
 # list and compile executable
-list(APPEND target_tests "{{ProjectName}}Test")
+list(APPEND target_tests "WCCommonTest")
 
-if ("{{ProjectName}}Test" IN_LIST target_tests)
-    set(test_name "{{ProjectName}}Test")
+if ("WCCommonTest" IN_LIST target_tests)
+    set(test_name "WCCommonTest")
     add_executable(${test_name})
     target_sources(${test_name} PUBLIC ${test_name}.cpp)
-    target_link_libraries(${test_name} PUBLIC Catch2::Catch2 {{ProjectName}}::{{ProjectName}})
+    target_link_libraries(${test_name} PUBLIC Catch2::Catch2 WCCommon::WCCommon)
     add_test("${test_name}" ${test_name})
 endif()

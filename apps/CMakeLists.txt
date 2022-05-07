@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
-project({{ProjectName}}Apps
-        VERSION {{Version}}
-        DESCRIPTION "{{ProjectName}} apps"
+project(WCCommonApps
+        VERSION 1.0
+        DESCRIPTION "WCCommon apps"
         LANGUAGES C CXX
 )
 
@@ -35,9 +35,8 @@ if ("main" IN_LIST target_apps)
     target_link_libraries(
         ${target_name}
     PUBLIC
-        Boost::boost
         Threads::Threads
-        {{ProjectName}}::{{ProjectName}}
+        WCCommon::WCCommon
     )
     install(TARGETS ${target_name} DESTINATION bin)
 endif()

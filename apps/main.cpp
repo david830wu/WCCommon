@@ -1,11 +1,11 @@
 /* main.cpp
  * 
- * Author: {{Author}}
- * Created: {{Today}}
- * Version: {{Version}}
+ * Author: Wentao Wu
+ * Created: 20220507
+ * Version: 1.0
 */
 
-#include "{{ProjectName}}.h"
+#include "WCCommon.h"
 
 #include <iostream>
 

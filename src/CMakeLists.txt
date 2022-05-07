@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
-project({{ProjectName}}Lib
-        VERSION {{Version}}
-        DESCRIPTION "{{ProjectName}}"
+project(WCCommonLib
+        VERSION 1.0
+        DESCRIPTION "WCCommon"
         LANGUAGES C CXX
 )
 
@@ -15,25 +15,24 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library({{ProjectName}})
+add_library(WCCommon)
 target_sources(
-    {{ProjectName}}
+    WCCommon
 PRIVATE
-    {{ProjectName}}.cpp
+    WCCommon.cpp
 )
 target_include_directories(
-    {{ProjectName}}
+    WCCommon
 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(
-    {{ProjectName}}
+    WCCommon
 PUBLIC
     Threads::Threads
-    Boost::boost
 )
-add_library({{ProjectName}}::{{ProjectName}} ALIAS {{ProjectName}})
+add_library(WCCommon::WCCommon ALIAS WCCommon)
 
-install(TARGETS {{ProjectName}} DESTINATION lib)
-install(FILES ${CMAKE_SOURCE_DIR}/include/{{ProjectName}}.h DESTINATION include)
+install(TARGETS WCCommon DESTINATION lib)
+install(FILES ${CMAKE_SOURCE_DIR}/include/WCCommon.h DESTINATION include)

@@ -6,10 +6,10 @@
     "configurations": [
         // tests
         {
-            "name": "{{ProjectName}}Test",
+            "name": "WCCommonTest",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/tests/{{ProjectName}}Test",
+            "program": "${workspaceFolder}/build/tests/WCCommonTest",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
