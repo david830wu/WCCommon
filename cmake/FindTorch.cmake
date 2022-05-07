@@ -1,0 +1,11 @@
+find_package(Torch QUIET)
+
+if(TORCH_FOUND)
+    message(STATUS "Found Torch: create Torch::Torch interface target")
+    message(STATUS "Torch include: ${TORCH_INCLUDE_DIRS}")
+    message(STATUS "Torch libs   : ${TORCH_LIBRARIES}"   )
+    add_library(itorch INTERFACE) 
+    target_include_directories(itorch INTERFACE ${TORCH_INCLUDE_DIRS})                        
+    target_link_libraries(itorch INTERFACE ${TORCH_LIBRARIES})
+    add_library(Torch::Torch ALIAS itorch)
+endif()  

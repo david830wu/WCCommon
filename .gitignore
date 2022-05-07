@@ -1,0 +1,66 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# IDEs
+# .vscode
+.vs
+*.sln
+*.vcxproj.*
+# vim
+*.swp
+
+# MacOs
+.DS_Store
+
+# folders
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Xx]64/
+[Xx]86/
+[Bb]uild/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]logs/
+[Dd]ata/
+
+# Data
+*.csv
+*.hdf5
+*.h5
+*.gz
+*.zip
+
+# python
+__pycache__/
+*.pyc
