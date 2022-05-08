@@ -1,0 +1,8 @@
+%YAML 1.2
+---
+
+data_folder : Data/${today}
+trader_id   : 42
+username    : username
+server_ip   : 127.0.0.1
+server_port : 8888
