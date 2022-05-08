@@ -15,24 +15,43 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(WCCommon)
-target_sources(
-    WCCommon
-PRIVATE
-    WCCommon.cpp
-)
+find_package(spdlog REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(fmt REQUIRED)
+
+add_library(WCCommon INTERFACE)
 target_include_directories(
     WCCommon
-PUBLIC
+INTERFACE
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(
     WCCommon
-PUBLIC
+INTERFACE
+    yaml-cpp
+    fmt::fmt
     Threads::Threads
 )
 add_library(WCCommon::WCCommon ALIAS WCCommon)
 
-install(TARGETS WCCommon DESTINATION lib)
-install(FILES ${CMAKE_SOURCE_DIR}/include/WCCommon.h DESTINATION include)
+add_library(LogConfig)
+target_sources(
+    LogConfig
+PRIVATE
+    LogConfig.cpp
+)
+target_include_directories(
+    LogConfig
+PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(
+    LogConfig
+PUBLIC
+    spdlog::spdlog
+PRIVATE
+    WCCommon::WCCommon
+)
+add_library(LogConfig::LogConfig ALIAS LogConfig)

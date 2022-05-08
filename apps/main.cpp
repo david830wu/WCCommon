@@ -5,8 +5,6 @@
  * Version: 1.0
 */
 
-#include "WCCommon.h"
-
 #include <iostream>
 
 int main() {
