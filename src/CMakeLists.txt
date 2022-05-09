@@ -18,6 +18,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(spdlog REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(fmt REQUIRED)
+find_package(date REQUIRED)
 
 add_library(WCCommon INTERFACE)
 target_include_directories(
@@ -29,8 +30,9 @@ INTERFACE
 target_link_libraries(
     WCCommon
 INTERFACE
-    yaml-cpp
+    date::date
     fmt::fmt
+    yaml-cpp
     Threads::Threads
 )
 add_library(WCCommon::WCCommon ALIAS WCCommon)
@@ -55,3 +57,28 @@ PRIVATE
     WCCommon::WCCommon
 )
 add_library(LogConfig::LogConfig ALIAS LogConfig)
+
+
+#================================================
+# Install 
+#================================================
+install(TARGETS WCCommon LogConfig
+    EXPORT WCCommonTargets
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include
+)
+install(DIRECTORY
+    ${CMAKE_SOURCE_DIR}/include/
+DESTINATION
+    include
+)
+
+set(ConfigPackageLocation lib/cmake/WCCommon)
+install(EXPORT WCCommonTargets
+    FILE WCCommonTargets.cmake
+    NAMESPACE WCCommon::
+    DESTINATION ${ConfigPackageLocation}
+)
+install(FILES ${CMAKE_SOURCE_DIR}/cmake/WCCommonConfig.cmake
+    DESTINATION ${ConfigPackageLocation}
+)
