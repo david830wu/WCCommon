@@ -20,12 +20,12 @@ namespace wcc {
     // 
     class NumericTime {
     public:
-        NumericTime(unsigned int int_time = 0)
+        NumericTime(unsigned int int_time = 240000'000)
           : data_(int_time)
         {}
 
         NumericTime(const std::string& value) {
-            int hour=0, min=0, sec=0, ms=0;
+            int hour = 24, min = 0, sec = 0, ms = 0;
             std::sscanf(value.c_str(), "%02d:%02d:%02d.%03d", &hour, &min, &sec, &ms);
             data_ = to_timestamp(hour, min, sec, ms);
         }
@@ -101,7 +101,7 @@ namespace wcc {
     private:
 
         static unsigned int to_timestamp(int hour, int min, int sec, int ms) {
-            unsigned int timestamp = 0;
+            unsigned int timestamp = 240000'000;
             while(ms   < 0) { --sec ; ms  += 1000; }
             while(sec  < 0) { --min ; sec += 60  ; }
             while(min  < 0) { --hour; min += 60  ; }
