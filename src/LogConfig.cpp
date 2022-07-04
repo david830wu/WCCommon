@@ -84,7 +84,6 @@ void config_log(std::string_view config_file) {
 
         for(auto name: config["loggers"]) {
             std::string name_str = name.as<std::string>();
-            std::cout << "add logger: " << name_str << std::endl;
             impl::s_logger_table[name_str] = std::make_shared<spdlog::logger>(name_str, std::begin(sinks), std::end(sinks));
         }
 
