@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.0.0"
-#define WCCOMMON_VERSION_MESSAGE "Add first util collections" 
+#define WCCOMMON_VERSION         "1.1.0"
+#define WCCOMMON_VERSION_MESSAGE "add wcc::get_logger to get logger safely" 
