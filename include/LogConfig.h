@@ -8,9 +8,12 @@
 
 #include <string>
 #include <spdlog/spdlog.h>
+#include <string_view>
 
 namespace wcc {
 
-void config_log(const std::string& config_file);
+void config_log(std::string_view config_file);
+
+std::shared_ptr<spdlog::logger> get_logger(std::string_view logger_name);
 
 } /* namespace wcc */
