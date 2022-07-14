@@ -211,8 +211,9 @@ int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tup
     }
 }
 
-template<typename T, template<class> typename Container, typename Filter>
-void read_csv(std::string const& filename, Container<T>& data, Filter filter) {
+template<typename Container, typename Filter>
+void read_csv(std::string const& filename, Container& data, Filter filter) {
+    using value_type = typename Container::value_type;
     MmapFile mmap_file(filename);
     const char* buffer_begin = mmap_file.begin();
     const char* buffer_end   = mmap_file.end()  ;
@@ -220,7 +221,7 @@ void read_csv(std::string const& filename, Container<T>& data, Filter filter) {
     const char* buffer = buffer_begin;
 
     data.clear();
-    T element;
+    value_type element;
     ProgressBar pbar(70, std::cout);
     while(buffer < buffer_end) {
         buffer = string_to_tuple(buffer, element, ',');
@@ -233,14 +234,17 @@ void read_csv(std::string const& filename, Container<T>& data, Filter filter) {
     pbar.finish();
 }
 
-template<typename T, template<class> typename Container>
-void read_csv(std::string const& filename, Container<T>& data) {
-    read_csv(filename, data, [](const T&){return false;});
+template<typename Container>
+void read_csv(std::string const& filename, Container& data) {
+    using value_type = typename Container::value_type;
+    read_csv(filename, data, [](const value_type&){return false;});
 }
 
-template<typename T, template<class> typename Container>
-void write_csv(std::string const& filename, Container<T> const& data) {
+template<typename Container>
+void write_csv(std::string const& filename, Container const& data) {
     const static std::size_t k_buffer_size = 64 << 20; // 64MB buffer
+    using value_type = typename Container::value_type;
+
     std::ofstream of(filename);
     std::vector<char> buffer_a(k_buffer_size, '\0');
     int used = 0;
