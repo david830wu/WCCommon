@@ -6,6 +6,43 @@ WCCommon is a collection of frequently used functions and tools in HFT developme
 
 ## Utils
 
+### CsvIO
+Fast, simple and user-friendly utils to read and write CSV file, very efficient for large file.
+Watch the progress bar and leave off with confidence.
+
+```cpp
+using Depth = std::tuple<
+    uint32_t        ,
+    wcc::NumericTime,
+    double          ,
+    double          ,
+    unsigned long   ,
+    double          ,
+    unsigned long   ,
+    char            ,
+    wcc::NumericTime
+>;
+
+TEST_CASE("CsvIOTest", "[WCCommon]") {
+    std::string test_file_name = "CsvIOTest.csv";
+    generate_depth(depths);
+
+    SECTION("write") {
+        write_csv(test_file_name, depths);
+    }
+    SECTION("read") {
+        std::vector<Depth> read_depths;
+        read_csv(test_file_name, read_depths);
+    }
+    SECTION("read with filter") {
+        std::vector<Depth> read_depths;
+        read_csv(test_file_name, read_depths, [](Depth const& depth){
+            return std::get<DepthField::Instrument>(depth) > (k_len + 1) / 2;
+        });
+    }
+}
+```
+
 ### LogConfig
 
 A convenient function to configure loggers in spdlog according to an yaml file.

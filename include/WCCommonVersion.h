@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.2.0"
-#define WCCOMMON_VERSION_MESSAGE "add wcc::ProgressBar" 
+#define WCCOMMON_VERSION         "1.3.0"
+#define WCCOMMON_VERSION_MESSAGE "add wcc::CsvIO to efficiently play with large CSV file" 
