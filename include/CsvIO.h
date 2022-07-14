@@ -175,11 +175,21 @@ const char* string_to_tuple(const char* line, std::tuple<Args...>& tuple, char d
     std::string line_buffer(line, end_pos);
     std::stringstream ss(line_buffer);
     std::string _;
-    std::getline(ss, _, ','); // skip first field
+    // std::getline(ss, _, ','); // skip first field
     std::apply([&ss, delim](Args&... args) {
         ((read_field(ss, delim, args)), ...);
     }, tuple);
     return line + line_buffer.size() + 1;
+}
+
+
+template<typename T>
+std::string to_string_safe(const T& value) {
+    if constexpr (std::is_same_v<T, char>) {
+        return std::string(1, value);
+    } else {
+        return std::to_string(value);
+    }
 }
 
 // Caution: Default impl has a poor performance on large file.
@@ -188,7 +198,7 @@ template<typename... Args>
 int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tuple, char delim = ',') {
     std::stringstream ss;
     std::apply([&ss, delim](Args const&... args) {
-        ((ss << std::to_string(args) << delim), ...);
+        ((ss << to_string_safe(args) << delim), ...);
     }, tuple);
     std::string buffer = ss.str();
     if(buffer.size() > size || buffer.empty()) {
@@ -202,7 +212,7 @@ int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tup
 }
 
 template<typename T, template<class> typename Container, typename Filter>
-void load_csv(std::string const& filename, Container<T>& data, Filter filter) {
+void read_csv(std::string const& filename, Container<T>& data, Filter filter) {
     MmapFile mmap_file(filename);
     const char* buffer_begin = mmap_file.begin();
     const char* buffer_end   = mmap_file.end()  ;
@@ -224,12 +234,12 @@ void load_csv(std::string const& filename, Container<T>& data, Filter filter) {
 }
 
 template<typename T, template<class> typename Container>
-void load_csv(std::string const& filename, Container<T>& data) {
-    load_csv(filename, data, [](const T&){return false;});
+void read_csv(std::string const& filename, Container<T>& data) {
+    read_csv(filename, data, [](const T&){return false;});
 }
 
 template<typename T, template<class> typename Container>
-void dump_csv(std::string const& filename, Container<T> const& data) {
+void write_csv(std::string const& filename, Container<T> const& data) {
     const static std::size_t k_buffer_size = 64 << 20; // 64MB buffer
     std::ofstream of(filename);
     std::vector<char> buffer_a(k_buffer_size, '\0');
