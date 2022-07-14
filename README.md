@@ -91,6 +91,25 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
 }
 ```
 
+## ProgressBar
+Show a progress bar to happily wait for a result.
+
+```cpp
+TEST_CASE("ProgressBarTest", "[WCCommon]") {
+    SECTION("show") {
+        std::size_t data_len = 128;
+        wcc::ProgressBar prog_bar(70, std::cout);
+        for(std::size_t i = 0; i < data_len ; ++i) {
+            // proccessing data
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+            prog_bar.update( (i + 1) * 100 / data_len ); // input ranges from 0(start) to 100(completed)
+        }
+        prog_bar.finish();
+    }
+}
+```
+
 ### YAMLGetField
 
 Get field of a given yaml file, replace "${today}" string as its value, and print clear error message if field not exist or type bad conversion.
@@ -156,7 +175,6 @@ namespace wcc {
     class FIFOInfo;
 }
 ```
-
 
 
 ## Dependencies
