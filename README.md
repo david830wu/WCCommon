@@ -23,9 +23,12 @@ using Depth = std::tuple<
     wcc::NumericTime
 >;
 
+static constexpr std::size_t k_len = 1<<20;
+std::vector<Depth> depths;
+
 TEST_CASE("CsvIOTest", "[WCCommon]") {
     std::string test_file_name = "CsvIOTest.csv";
-    generate_depth(depths);
+    generate_depth(depths, k_len);
 
     SECTION("write") {
         write_csv(test_file_name, depths);
