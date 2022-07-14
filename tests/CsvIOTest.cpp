@@ -37,7 +37,7 @@ struct DepthField {
 
 #ifdef WCC_USE_CUSTOM_CONVERTER
 namespace wcc {
-    // read 1<<20 Depth tuple: 
+    // read 1<<20 Depth tuples: 
     //   - Default    method: 2.061s
     //   - Use custom method: 0.498s
     // leads a 4X faster
@@ -56,7 +56,7 @@ namespace wcc {
         return line;
     }
 
-    // write 1<<20 Depth tuple: 
+    // write 1<<20 Depth tuples: 
     //   - Default    method: 1.859s
     //   - Use custom method: 1.004s
     // leads a 2X faster
@@ -141,5 +141,16 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         }
     }
     SECTION("read with filter") {
+        std::vector<Depth> read_depths;
+        auto read_s = std::chrono::high_resolution_clock::now();
+        read_csv(test_file_name, read_depths, [](Depth const& depth){
+            return std::get<DepthField::Instrument>(depth) > (k_len + 1) / 2;
+        });
+        auto read_e = std::chrono::high_resolution_clock::now();
+        fmt::print("Read Cost = {:.3f}s, Insert {} items\n", 
+            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(read_e - read_s).count())/1000.0 
+            , read_depths.size()
+        );
+        REQUIRE(read_depths.size() == (k_len/2) );
     }
 }
