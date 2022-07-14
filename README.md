@@ -91,7 +91,7 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
 }
 ```
 
-## ProgressBar
+### ProgressBar
 Show a progress bar to happily wait for a result.
 
 ```cpp
