@@ -237,7 +237,7 @@ void read_csv(std::string const& filename, Container& data, Pred pred) {
 template<typename Container>
 void read_csv(std::string const& filename, Container& data) {
     using value_type = typename Container::value_type;
-    read_csv(filename, data, [](const value_type&){return false;});
+    read_csv(filename, data, [](const value_type&) { return true; });
 }
 
 template<typename Container>
