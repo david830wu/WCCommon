@@ -211,8 +211,9 @@ int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tup
     }
 }
 
-template<typename Container, typename Filter>
-void read_csv(std::string const& filename, Container& data, Filter filter) {
+// add read tuple to container if predicate == true
+template<typename Container, typename Pred>
+void read_csv(std::string const& filename, Container& data, Pred pred) {
     using value_type = typename Container::value_type;
     MmapFile mmap_file(filename);
     const char* buffer_begin = mmap_file.begin();
@@ -226,10 +227,9 @@ void read_csv(std::string const& filename, Container& data, Filter filter) {
     while(buffer < buffer_end) {
         buffer = string_to_tuple(buffer, element, ',');
         pbar.update((buffer - buffer_begin) * 100 / buffer_size);
-        if(filter(element)) {
-            continue;
+        if(pred(element)) {
+            data.push_back(element);
         }
-        data.push_back(element);
     }
     pbar.finish();
 }
