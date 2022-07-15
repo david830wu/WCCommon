@@ -56,7 +56,7 @@ template<> inline int value_to_string<double            >(char* buffer, std::siz
 template<> inline int value_to_string<unsigned long long>(char* buffer, std::size_t size, unsigned long long const& value) { return snprintf(buffer, size, "%llu", value); }
 template<> inline int value_to_string<wcc::NumericTime  >(char* buffer, std::size_t size, wcc::NumericTime   const& value) { return snprintf(buffer, size, "%u"  , static_cast<uint32_t>(value));}
 
-const char* skip_token(const char* line, char delim) {
+inline const char* skip_token(const char* line, char delim) {
     while(*line != delim) {
         if(*line == '\0') {
             throw std::runtime_error("skip_token,MissingTokenEndDelim");
@@ -69,7 +69,7 @@ const char* skip_token(const char* line, char delim) {
 
 // end_delim cannot set to be '\0'
 template<typename T>
-const char* read_token(const char* buffer, T* p_value, char end_delim = ',') {
+inline const char* read_token(const char* buffer, T* p_value, char end_delim = ',') {
     constexpr static int k_max_token_size = 32 + 1;
     char token_buffer[k_max_token_size];
     int i;
@@ -88,7 +88,7 @@ const char* read_token(const char* buffer, T* p_value, char end_delim = ',') {
 
 // return written char number ('\0' excluded) or -1 if failure
 template<typename T>
-int write_token(char* buffer, std::size_t size, T const& value, char end_delim = ',') {
+inline int write_token(char* buffer, std::size_t size, T const& value, char end_delim = ',') {
     constexpr static int k_max_token_size = 32 + 1;
     int used;
     char token_buffer[k_max_token_size];
@@ -155,7 +155,7 @@ private:
 };
 
 template<typename T>
-void read_field(std::stringstream& ss, char delim, T& value) {
+inline void read_field(std::stringstream& ss, char delim, T& value) {
     std::string value_str;
     std::getline(ss, value_str, delim);
     value = string_to_value<T>(value_str.c_str());
@@ -164,7 +164,7 @@ void read_field(std::stringstream& ss, char delim, T& value) {
 // Caution: Default impl has a poor performance on large file.
 // It is strongly RECOMMANDED to define a specification of this template function for custom types.
 template<typename... Args>
-const char* string_to_tuple(const char* line, std::tuple<Args...>& tuple, char delim = ',') {
+inline const char* string_to_tuple(const char* line, std::tuple<Args...>& tuple, char delim = ',') {
     const char* end_pos = line;
     while(*end_pos != '\n') {
         if(*end_pos == '\0') {
@@ -184,7 +184,7 @@ const char* string_to_tuple(const char* line, std::tuple<Args...>& tuple, char d
 
 
 template<typename T>
-std::string to_string_safe(const T& value) {
+inline std::string to_string_safe(const T& value) {
     if constexpr (std::is_same_v<T, char>) {
         return std::string(1, value);
     } else {
@@ -195,7 +195,7 @@ std::string to_string_safe(const T& value) {
 // Caution: Default impl has a poor performance on large file.
 // It is strongly RECOMMANDED to define a specification of this template function for custom types.
 template<typename... Args>
-int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tuple, char delim = ',') {
+inline int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tuple, char delim = ',') {
     std::stringstream ss;
     std::apply([&ss, delim](Args const&... args) {
         ((ss << to_string_safe(args) << delim), ...);
@@ -213,7 +213,7 @@ int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tup
 
 // add read tuple to container if predicate == true
 template<typename Container, typename Pred>
-void read_csv(std::string const& filename, Container& data, Pred pred) {
+inline void read_csv(std::string const& filename, Container& data, Pred pred) {
     using value_type = typename Container::value_type;
     MmapFile mmap_file(filename);
     const char* buffer_begin = mmap_file.begin();
@@ -235,13 +235,13 @@ void read_csv(std::string const& filename, Container& data, Pred pred) {
 }
 
 template<typename Container>
-void read_csv(std::string const& filename, Container& data) {
+inline void read_csv(std::string const& filename, Container& data) {
     using value_type = typename Container::value_type;
     read_csv(filename, data, [](const value_type&) { return true; });
 }
 
 template<typename Container>
-void write_csv(std::string const& filename, Container const& data) {
+inline void write_csv(std::string const& filename, Container const& data) {
     const static std::size_t k_buffer_size = 64 << 20; // 64MB buffer
     using value_type = typename Container::value_type;
 
