@@ -4,6 +4,30 @@
 
 WCCommon is a collection of frequently used functions and tools in HFT development.
 
+## Install
+
+install WCCommon lib to path ~/opt/WCCommon
+
+```bash
+git clone git@github.com:david830wu/WCCommon.git
+cd WCCommon
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/opt/WCCommon ..
+make
+make install
+
+# add lib install path to cmake search list
+export WCCommon_DIR=~/opt/WCCommon/lib/cmake/WCCommon
+```
+
+When MyApp is build with WCCommon, add dependent targets in CMakeLists.txt
+```
+find_package(WCCommon)
+add_executable(MyApp)
+target_sources(MyApp RPIVATE main.cpp)
+target_link_libraries(MyApp PRIVATE WCCommon::WCCommon WCCommon::LogConfig)
+```
+
 ## Utils
 
 ### CsvIO
