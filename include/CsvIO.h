@@ -14,6 +14,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 #include <sys/mman.h>
 #include <sys/stat.h>
