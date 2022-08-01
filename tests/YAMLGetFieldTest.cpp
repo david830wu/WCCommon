@@ -15,16 +15,20 @@ TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
         wcc::check_file_exist(config_file);
         std::string today_str { wcc::get_today_str() };
         YAML::Node config = YAML::LoadFile(config_file);
-        std::string data_folder; YAML_GET_FIELD(data_folder, config, data_folder);
-        uint64_t    trader_id  ; YAML_GET_FIELD(trader_id  , config, trader_id  );
-        std::string username   ; YAML_GET_FIELD(username   , config, username   );
-        std::string server_ip  ; YAML_GET_FIELD(server_ip  , config, server_ip  );
-        uint32_t    server_port; YAML_GET_FIELD(server_port, config, server_port);
+        std::string      data_folder; YAML_GET_FIELD(data_folder, config, data_folder);
+        uint64_t         trader_id  ; YAML_GET_FIELD(trader_id  , config, trader_id  );
+        std::string      username   ; YAML_GET_FIELD(username   , config, username   );
+        std::string      server_ip  ; YAML_GET_FIELD(server_ip  , config, server_ip  );
+        uint32_t         server_port; YAML_GET_FIELD(server_port, config, server_port);
+        wcc::NumericTime format_time; YAML_GET_FIELD(format_time, config, format_time);
+        wcc::NumericTime raw_time   ; YAML_GET_FIELD(raw_time   , config, raw_time   );
         REQUIRE(data_folder == fmt::format("Data/{}", today_str));
         REQUIRE(trader_id   == 42);
         REQUIRE(username    == "username");
         REQUIRE(server_ip   == "127.0.0.1");
         REQUIRE(server_port == 8888);
+        REQUIRE(format_time == wcc::NumericTime(10, 30, 52, 123));
+        REQUIRE(raw_time    == wcc::NumericTime(11, 32, 18, 456));
     }
     SECTION("YAMLGetField-NoField") {
         std::string config_file("YAMLGetFieldTest.yaml");

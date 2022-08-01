@@ -6,3 +6,5 @@ trader_id   : 42
 username    : username
 server_ip   : 127.0.0.1
 server_port : 8888
+format_time : 10:30:52.123
+raw_time    : 113218456
