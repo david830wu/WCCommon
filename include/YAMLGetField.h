@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include "NumericTime.h"
+
 #include <fmt/format.h>
 #include <regex>
 #include <yaml-cpp/yaml.h>
@@ -45,6 +47,29 @@ inline auto render_config_field<std::string>(std::string const& value, std::stri
     std::regex today_regex("\\$\\{today\\}");
     return std::regex_replace(value, today_regex, today_str); 
 }
+
+namespace YAML {
+	template<>
+	struct convert<wcc::NumericTime> {
+		static Node encode(const wcc::NumericTime& value) {
+			Node node;
+			node.push_back(value.str());
+			return node;
+		}
+		static bool decode(const Node& node, wcc::NumericTime& value) {
+            if(!node.IsScalar()) {
+                return false;
+            }
+            std::string node_str = node.as<std::string>();
+            if(node_str.find(':') == std::string::npos) {
+                value = wcc::NumericTime(std::stol(node_str));
+            } else {
+			    value = wcc::NumericTime(node_str);
+            }
+			return true;
+		}
+	};
+} // namespace YAML
 
 // variable today_str must be defined before call YAML_GET_FIELD
 #define YAML_GET_FIELD(var, node, key) \
