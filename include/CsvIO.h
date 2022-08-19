@@ -25,7 +25,12 @@
 
 namespace wcc {
 
-template<typename KeyType> inline auto string_to_value(const char* buffer) -> KeyType { throw std::logic_error("string_to_value,NotImplement"); }
+template <typename T>
+struct StringToValueFalse { enum { value = false }; };
+template<typename ValueType> inline auto string_to_value(const char* buffer) -> ValueType { 
+    static_assert(StringToValueFalse<ValueType>::value, "Not Implemented"); 
+    return ValueType();
+}
 template<> inline auto string_to_value<std::string       >(const char* buffer) -> std::string        { return buffer;        }
 template<> inline auto string_to_value<bool              >(const char* buffer) -> bool               { return (buffer[0] == 'T') || (buffer[0] == '1'); }
 template<> inline auto string_to_value<char              >(const char* buffer) -> char               { return buffer[0];     }
@@ -41,7 +46,12 @@ template<> inline auto string_to_value<double            >(const char* buffer) -
 template<> inline auto string_to_value<unsigned long long>(const char* buffer) -> unsigned long long { return atoll(buffer); }
 template<> inline auto string_to_value<wcc::NumericTime  >(const char* buffer) -> wcc::NumericTime   { return wcc::NumericTime(atoi(buffer));}
 
-template<typename KeyType> inline int value_to_string(char* buffer, std::size_t size, KeyType const& value) { throw std::logic_error("value_to_string,NotImplement"); }
+template <typename T>
+struct ValueToStringFalse { enum { value = false }; };
+template<typename ValueType> inline int value_to_string(char* buffer, std::size_t size, ValueType const& value) { 
+    static_assert(ValueToStringFalse<ValueType>::value, "Not Implemented"); 
+    return 0;
+}
 template<> inline int value_to_string<std::string       >(char* buffer, std::size_t size, std::string        const& value) { return snprintf(buffer, size, "%s"  , value.c_str());}
 template<> inline int value_to_string<bool              >(char* buffer, std::size_t size, bool               const& value) { return snprintf(buffer, size, "%c"  , value ? 'T' : 'F'); }
 template<> inline int value_to_string<char              >(char* buffer, std::size_t size, char               const& value) { return snprintf(buffer, size, "%c"  , value); }
