@@ -253,7 +253,7 @@ inline void read_csv(std::string const& filename, Container& data) {
 
 template<typename Container>
 inline void write_csv(std::string const& filename, Container const& data) {
-    const static std::size_t k_buffer_size = 64 << 20; // 64MB buffer
+    const static std::size_t k_buffer_size = 64UL << 20; // 64MB buffer
     using value_type = typename Container::value_type;
 
     std::ofstream of(filename);
@@ -265,7 +265,7 @@ inline void write_csv(std::string const& filename, Container const& data) {
     for(std::size_t i = 0; i < len; ++i) {
         used = tuple_to_string(buffer_a.data() + total_used, k_buffer_size - total_used, data[i], ',');
         if(used < 0) {
-            of << buffer_a.data(); // write buffer to file
+            of.write(buffer_a.data(), total_used); // write buffer to file
             used = tuple_to_string(buffer_a.data(), k_buffer_size, data[i], ','); // retry with emtpy buffer
             if(used < 0) { throw std::runtime_error("Buffer is not enough for a single tuple"); }
             total_used = used;
@@ -274,7 +274,8 @@ inline void write_csv(std::string const& filename, Container const& data) {
         }
         pbar.update( (i + 1) * 100 / len );
     }
-    of << buffer_a.data();
+    buffer_a[total_used] = '\0';
+    of.write(buffer_a.data(), total_used);
     pbar.finish();
     of.close();
 }

@@ -84,7 +84,7 @@ namespace wcc {
 } // namespace wcc
 #endif
 
-static const std::size_t k_len = 1<<20;
+static const std::size_t k_len = 1UL<<20;
 
 void generate_depth(std::vector<Depth>& data) {
     for(std::size_t i = 0; i < k_len; ++i) {
@@ -136,6 +136,7 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
             (double)(std::chrono::duration_cast<std::chrono::milliseconds>(read_e - read_s).count())/1000.0 
             , read_depths.size()
         );
+        REQUIRE(read_depths.size() == k_len);
         for(std::size_t i = 0; i < k_len; ++i) {
             REQUIRE(read_depths[i] == depths[i]) ;
         }
