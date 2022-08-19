@@ -11,15 +11,16 @@
 #include "catch2/catch.hpp"
 
 TEST_CASE("WCCommonTest", "[WCCommon]") {
+    std::string log_config_file= "tests/LogConfig.yaml";
     SECTION("spdlog-get") {
-        std::string log_config_file("LogConfig.yaml");
         wcc::check_file_exist(log_config_file);
         wcc::mkdir_if_not_exist("log");
         wcc::config_log(log_config_file);
         auto p_logger = spdlog::get("main");
     }
     SECTION("spdlog-levels") {
-        wcc::config_log("LogConfig.yaml");
+        wcc::config_log(log_config_file);
+        wcc::mkdir_if_not_exist("log");
         auto p_logger = spdlog::get("main");
         p_logger->debug("This is a {} message", "debug");
         p_logger->info("pi = {:.4f}", 3.1415926);

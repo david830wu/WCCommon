@@ -10,8 +10,8 @@
 #include "catch2/catch.hpp"
 
 TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
+    std::string config_file = "tests/YAMLGetFieldTest.yaml";
     SECTION("YAMLGetField") {
-        std::string config_file("YAMLGetFieldTest.yaml");
         wcc::check_file_exist(config_file);
         std::string today_str { wcc::get_today_str() };
         YAML::Node config = YAML::LoadFile(config_file);
@@ -31,7 +31,6 @@ TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
         REQUIRE(raw_time    == wcc::NumericTime(11, 32, 18, 456));
     }
     SECTION("YAMLGetField-NoField") {
-        std::string config_file("YAMLGetFieldTest.yaml");
         wcc::check_file_exist(config_file);
         std::string today_str { wcc::get_today_str() };
         YAML::Node config = YAML::LoadFile(config_file);
@@ -47,7 +46,6 @@ TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
         REQUIRE(err_message == "Cannot find \"password\" in Node \"config\"");
     }
     SECTION("YAMLGetField-BadConvertion") {
-        std::string config_file("YAMLGetFieldTest.yaml");
         wcc::check_file_exist(config_file);
         std::string today_str { wcc::get_today_str() };
         YAML::Node config = YAML::LoadFile(config_file);
@@ -63,7 +61,6 @@ TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
         REQUIRE(err_message == "Bad conversion of \"username\" in Node \"config\"");
     }
     SECTION("YAMLGetField-NoRender") {
-        std::string config_file("YAMLGetFieldTest.yaml");
         wcc::check_file_exist(config_file);
         // std::string today_str is not required in no render version
         YAML::Node config = YAML::LoadFile(config_file);
