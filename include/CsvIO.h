@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "NaNDefs.h"
 #include "NumericTime.h"
 #include "ProgressBar.h"
 
@@ -84,6 +85,11 @@ inline const char* read_token(const char* buffer, T* p_value, char end_delim = '
     constexpr static int k_max_token_size = 32 + 1;
     char token_buffer[k_max_token_size];
     int i;
+
+    if(buffer[0] == end_delim) {
+        *p_value = GetNaN<T>::value;
+        return buffer + 1;
+    }
     for(i = 0; i < k_max_token_size - 1; ++i) {
         if(buffer[i] == end_delim)
             break;

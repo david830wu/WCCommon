@@ -154,4 +154,21 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         );
         REQUIRE(read_depths.size() == (k_len/2) );
     }
+    SECTION("read with NaN") {
+        std::string csv_with_nan = 
+            "1,,7.8000,7.8000,1000,7.7900,3100,T,103850433\n"
+            "2,133000000,,7.8000,1000,7.7900,3100,T,103850433\n"
+            "3,133000000,7.8000,7.8000,1000,7.7900,3100,,103850433\n"
+            "4,133000000,7.8000,7.8000,,7.7900,3100,T,103850433\n";
+        std::ofstream of(test_file_name);
+        of << csv_with_nan;
+        of.close();
+        std::vector<Depth> read_depths;
+        read_csv(test_file_name, read_depths);
+        REQUIRE(read_depths.size() == 4);
+        REQUIRE(wcc::isnan(std::get<DepthField::DepthMarketTime>(read_depths[0])));
+        REQUIRE(wcc::isnan(std::get<DepthField::Last           >(read_depths[1])));
+        REQUIRE(wcc::isnan(std::get<DepthField::Status         >(read_depths[2])));
+        REQUIRE(wcc::isnan(std::get<DepthField::AskVol1        >(read_depths[3])));
+    }
 }
