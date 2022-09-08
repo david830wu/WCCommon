@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.3.2"
-#define WCCOMMON_VERSION_MESSAGE "Fixed flush buffer bug in write_csv" 
+#define WCCOMMON_VERSION         "1.4.0"
+#define WCCOMMON_VERSION_MESSAGE "Add NaN value handler in CsvIO" 
