@@ -9,6 +9,7 @@
 #include <string>
 #include <cstring>
 #include <chrono>
+#include <limits>
 #include <date/date.h>
 
 #include <time.h>
@@ -20,7 +21,9 @@ namespace wcc {
     // 
     class NumericTime {
     public:
-        NumericTime(unsigned int int_time = 240000'000)
+        static const NumericTime NaN;
+
+        constexpr NumericTime(unsigned int int_time = 240000'000)
           : data_(int_time)
         {}
 
@@ -32,6 +35,7 @@ namespace wcc {
         NumericTime(int hour, int min, int sec, int ms = 0)
           : data_(to_timestamp(hour, min, sec, ms))
         {}
+        ~NumericTime() = default;
 
         operator unsigned int() const { return data_; }
 
@@ -91,8 +95,6 @@ namespace wcc {
             return data_;
         }
 
-        static const NumericTime NaN;
-
         friend std::ostream& operator<<(std::ostream& os, const NumericTime& value) {
             os << value.str();
             return os;
@@ -100,7 +102,7 @@ namespace wcc {
 
     private:
 
-        static unsigned int to_timestamp(int hour, int min, int sec, int ms) {
+        unsigned int to_timestamp(int hour, int min, int sec, int ms) {
             unsigned int timestamp = 240000'000;
             while(ms   < 0) { --sec ; ms  += 1000; }
             while(sec  < 0) { --min ; sec += 60  ; }
@@ -123,6 +125,30 @@ namespace wcc {
 
     };  // class NumericTime
 
-    inline const NumericTime NumericTime::NaN = 240000'000; // requires c++17
+    inline constexpr NumericTime NumericTime::NaN = 240000'000; // requires c++17
 
 } // namespace wcdb
+
+namespace std {
+    template<> class numeric_limits<wcc::NumericTime> {
+public:
+    static constexpr bool is_specialized = true;
+ 
+    static constexpr wcc::NumericTime min() noexcept { return wcc::NumericTime(0); }
+    static constexpr wcc::NumericTime max() noexcept { return wcc::NumericTime(235959'999); }
+    static constexpr wcc::NumericTime lowest() noexcept { return wcc::NumericTime(0); }
+ 
+    static constexpr bool is_signed = false;
+    static constexpr bool is_integer = true;
+    static constexpr bool is_exact = true;
+ 
+    static constexpr bool has_infinity = true;
+    static constexpr bool has_quiet_NaN = true;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr wcc::NumericTime infinity() noexcept { return wcc::NumericTime::NaN; }
+    static constexpr wcc::NumericTime quiet_NaN() noexcept { return wcc::NumericTime::NaN; }
+ 
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = false;
+};
+}
