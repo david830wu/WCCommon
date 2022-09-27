@@ -66,7 +66,7 @@ template<> inline int value_to_string<unsigned long     >(char* buffer, std::siz
 template<> inline int value_to_string<float             >(char* buffer, std::size_t size, float              const& value) { return snprintf(buffer, size, "%.4f", value); }
 template<> inline int value_to_string<double            >(char* buffer, std::size_t size, double             const& value) { return snprintf(buffer, size, "%.4f", value); }
 template<> inline int value_to_string<unsigned long long>(char* buffer, std::size_t size, unsigned long long const& value) { return snprintf(buffer, size, "%llu", value); }
-template<> inline int value_to_string<wcc::NumericTime  >(char* buffer, std::size_t size, wcc::NumericTime   const& value) { return snprintf(buffer, size, "%09u"  , static_cast<uint32_t>(value));}
+template<> inline int value_to_string<wcc::NumericTime  >(char* buffer, std::size_t size, wcc::NumericTime   const& value) { return snprintf(buffer, size, "%09u", static_cast<uint32_t>(value));}
 
 inline const char* skip_token(const char* line, char delim) {
     while(*line != delim) {
