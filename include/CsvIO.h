@@ -15,6 +15,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include <sys/mman.h>
@@ -258,11 +259,19 @@ inline void read_csv(std::string const& filename, Container& data) {
 }
 
 template<typename Container>
-inline void write_csv(std::string const& filename, Container const& data) {
+inline void write_csv(std::string const& filename, Container const& data, char mode='o') {
     const static std::size_t k_buffer_size = 64UL << 20; // 64MB buffer
     using value_type = typename Container::value_type;
 
-    std::ofstream of(filename);
+    std::ios::openmode omode = std::ios::out;
+    if(mode == 'o') {
+        omode |= std::ios::trunc;
+    } else if(mode == 'a') {
+        omode |= std::ios::app;
+    } else {
+        throw std::invalid_argument("Unsupported write_csv mode");
+    }
+    std::ofstream of(filename, omode);
     std::vector<char> buffer_a(k_buffer_size, '\0');
     int used = 0;
     std::size_t total_used = 0;

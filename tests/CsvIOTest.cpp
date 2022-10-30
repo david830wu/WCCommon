@@ -171,4 +171,11 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         REQUIRE(wcc::isnan(std::get<DepthField::Status         >(read_depths[2])));
         REQUIRE(wcc::isnan(std::get<DepthField::AskVol1        >(read_depths[3])));
     }
+    SECTION("write with app mode") {
+        write_csv(test_file_name, depths, 'o');
+        write_csv(test_file_name, depths, 'a');
+        std::vector<Depth> double_depth;
+        read_csv(test_file_name, double_depth);
+        REQUIRE(double_depth.size() == depths.size() * 2);
+    }
 }
