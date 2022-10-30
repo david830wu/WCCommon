@@ -176,6 +176,10 @@ template<typename T>
 inline void read_field(std::stringstream& ss, char delim, T& value) {
     std::string value_str;
     std::getline(ss, value_str, delim);
+    if(value_str.empty()) {
+        value = GetNaN<T>::value;
+        return;
+    }
     value = string_to_value<T>(value_str.c_str());
 }
 
