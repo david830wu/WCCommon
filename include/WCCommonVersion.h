@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.4.0"
-#define WCCOMMON_VERSION_MESSAGE "Add NaN value handler in CsvIO" 
+#define WCCOMMON_VERSION         "1.4.1"
+#define WCCOMMON_VERSION_MESSAGE "Fixed generic version read_csv NaN bug" 
