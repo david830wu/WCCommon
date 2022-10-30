@@ -180,7 +180,7 @@ inline void read_field(std::stringstream& ss, char delim, T& value) {
 }
 
 // Caution: Default impl has a poor performance on large file.
-// It is strongly RECOMMANDED to define a specification of this template function for custom types.
+// It is strongly RECOMMENDED to define a specification of this template function for custom types.
 template<typename... Args>
 inline const char* string_to_tuple(const char* line, std::tuple<Args...>& tuple, char delim = ',') {
     const char* end_pos = line;
@@ -211,7 +211,7 @@ inline std::string to_string_safe(const T& value) {
 }
 
 // Caution: Default impl has a poor performance on large file.
-// It is strongly RECOMMANDED to define a specification of this template function for custom types.
+// It is strongly RECOMMENDED to define a specification of this template function for custom types.
 template<typename... Args>
 inline int tuple_to_string(char* line, std::size_t size, std::tuple<Args...> const& tuple, char delim = ',') {
     std::stringstream ss;
