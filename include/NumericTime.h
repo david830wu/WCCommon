@@ -152,7 +152,7 @@ public:
     static constexpr bool is_modulo = false;
     };
 
-    std::string to_string(wcc::NumericTime const& ntime) {
+    inline std::string to_string(wcc::NumericTime const& ntime) {
         constexpr int k_max_buffer_len = 12;
         char buffer[k_max_buffer_len];
         snprintf(buffer, k_max_buffer_len, "%09u", static_cast<unsigned int>(ntime));
