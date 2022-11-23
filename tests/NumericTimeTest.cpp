@@ -37,6 +37,9 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
     SECTION("ToStr") {
         REQUIRE(NumericTime(10, 31, 59, 10).str() == "10:31:59.010");
     }
+    SECTION("std ToStr") {
+        REQUIRE(std::to_string(NumericTime(9, 31, 59, 10)) == "093159010"); // padding zero
+    }
     SECTION("Negative time") {
         REQUIRE(NumericTime(10, 31, 59, -1) == NumericTime(10, 31, 58, 999));
         REQUIRE(NumericTime(10, 31, -1, 10) == NumericTime(10, 30, 59,  10));
