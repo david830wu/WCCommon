@@ -114,4 +114,19 @@ struct FIFOInfo {
     }
 };
 
+inline std::string join_string(std::vector<std::string> const& token, char delim = ',') {
+    if(token.empty()) {
+        return std::string();
+    }
+    auto iter = token.cbegin();
+    std::string res;
+    res.reserve(1024);
+    res += *(iter++);
+    while(iter != token.end()) {
+        res += delim;
+        res += *(iter++);
+    }
+    return res;
+}
+
 } /* namespace wcc */
