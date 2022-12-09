@@ -16,6 +16,7 @@ using namespace wcc;
 
 TEST_CASE("H5IOTest", "[WCCommon]") {
     std::string filename = "H5IOTestData.h5";
+    /*
     SECTION("write - array") {
         std::vector<double> darray{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
         std::vector<int   > iarray{1,1,2,3,5,8,11,13};
@@ -85,6 +86,55 @@ TEST_CASE("H5IOTest", "[WCCommon]") {
         REQUIRE(objs[0] == "d_dataset");
         REQUIRE(objs[1] == "i_dataset");
         H5Fclose(file_id);
+        unlink(filename.c_str());
+    }
+    */
+    SECTION("read - vector") {
+        std::vector<double> darray{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
+        std::vector<int   > iarray{1,1,2,3,5,8,11,13};
+        herr_t status;
+        hid_t file_id;
+        file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        if(file_id < 0) throw std::runtime_error("StreamFacade,dump_h5,H5FCreate");
+        hid_t group_id = H5Gcreate (file_id, "Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        write_vector_to_h5(group_id, "d_dataset", darray, 'z');
+        write_vector_to_h5(group_id, "i_dataset", iarray, 'z');
+        H5Gclose(group_id);
+        H5Fclose(file_id);
+
+        file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        std::vector<double> darray_load;
+        std::vector<int   > iarray_load;
+        read_vector_from_h5(file_id, "/Data/d_dataset", darray_load);
+        read_vector_from_h5(file_id, "/Data/i_dataset", iarray_load);
+        REQUIRE(darray_load == darray);
+        REQUIRE(iarray_load == iarray);
+        H5Fclose(file_id);
+
+        unlink(filename.c_str());
+    }
+    SECTION("read - list") {
+        std::list<double> dlist{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
+        std::list<int   > ilist{1,1,2,3,5,8,11,13};
+        herr_t status;
+        hid_t file_id;
+        file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        if(file_id < 0) throw std::runtime_error("StreamFacade,dump_h5,H5FCreate");
+        hid_t group_id = H5Gcreate (file_id, "Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        write_vector_to_h5(group_id, "d_dataset", dlist, 'z');
+        write_vector_to_h5(group_id, "i_dataset", ilist, 'z');
+        H5Gclose(group_id);
+        H5Fclose(file_id);
+
+        file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        std::list<double> dlist_load;
+        std::list<int   > ilist_load;
+        read_vector_from_h5(file_id, "/Data/d_dataset", dlist_load);
+        read_vector_from_h5(file_id, "/Data/i_dataset", ilist_load);
+        REQUIRE(dlist_load == dlist);
+        REQUIRE(ilist_load == ilist);
+        H5Fclose(file_id);
+
         unlink(filename.c_str());
     }
 }
