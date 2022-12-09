@@ -91,7 +91,7 @@ inline bool h5_has_object(hid_t file_id, std::string const& group) {
     } else if (tri == 0) { 
         return false;
     } else {
-        throw std::runtime_error("has_object_on_path,H5Lexists"); 
+        throw std::runtime_error("h5_has_object,H5Lexists"); 
     }
 }
 inline hid_t h5_make_group_if_not_exist(hid_t file_id, std::string const& group) {
@@ -99,13 +99,13 @@ inline hid_t h5_make_group_if_not_exist(hid_t file_id, std::string const& group)
     if(h5_has_object(file_id, group)) {
         group_id = H5Gopen(file_id, group.c_str(), H5P_DEFAULT);
         if(group_id < 0) {
-            throw std::runtime_error("make_group_if_not_exist,H5GOpen"); 
+            throw std::runtime_error("h5_make_group_if_not_exist,H5GOpen"); 
         }
         return group_id;
     } else {
         group_id = H5Gcreate(file_id, group.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
         if(group_id == H5I_INVALID_HID) {
-            throw std::runtime_error("make_group_if_not_exist,H5Gcreate"); 
+            throw std::runtime_error("h5_make_group_if_not_exist,H5Gcreate"); 
         }
         return group_id;
     }
@@ -150,7 +150,6 @@ inline std::vector<std::string> h5_scan_group_object(hid_t group_id) {
 // given /Stock group id as gid, `scan_path_objects(gid, "AAPL")` returns 
 //   std::vector<std::string>{"Transaction", "Orders"}
 inline std::vector<std::string> h5_scan_path_object(hid_t file_id, std::string const& path) {
-    herr_t status;
     hid_t group_id = H5Gopen(file_id, path.c_str(), H5P_DEFAULT);
     if(group_id == H5I_INVALID_HID) {
         throw std::runtime_error("h5_scan_path_object,H5Gopen,group=\""+path+"\"");
@@ -267,7 +266,7 @@ inline void h5_write_array(hid_t file_id, const std::string& dataset_name, const
         throw std::runtime_error("h5_write_array,H5Dcreate"); 
     }
 
-    herr_t status = H5Dwrite(dataset_id, data_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+    herr_t status = H5Dwrite(dataset_id, data_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, static_cast<void*>(data));
     if(status < 0) { throw std::runtime_error("h5_write_array,H5Dwrite"); }
 
     if( H5Sclose(dataspace_id) < 0 ) { throw std::runtime_error("h5_write_array,H5Sclose"); }

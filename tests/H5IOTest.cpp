@@ -96,8 +96,8 @@ TEST_CASE("H5IOTest", "[WCCommon]") {
         std::vector<double> darray{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
         std::vector<int   > iarray{1,1,2,3,5,8,11,13};
         H5File h5_file(filename, 'w');
-        h5_write_vector(h5_file.id(), "/d_dataset", darray, 'z');
-        h5_write_vector(h5_file.id(), "/i_dataset", iarray, 'z');
+        h5_write_vector(h5_file.id(), "/d_dataset", darray);
+        h5_write_vector(h5_file.id(), "/i_dataset", iarray);
         REQUIRE(h5_has_object(h5_file.id(), "/d_dataset") == true);
         REQUIRE(h5_has_object(h5_file.id(), "/i_dataset") == true);
         auto dims = h5_query_dataset_dim(h5_file.id(), "/d_dataset");
