@@ -133,7 +133,7 @@ inline std::vector<std::string> h5_scan_group_object(hid_t group_id) {
     hsize_t idx = 0;
     herr_t status = H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, &_h5_add_group_name_to_keys, (void*)(&objs));
     if(status < 0) {
-        throw std::runtime_error("scan_group_objects,H5Literate");
+        throw std::runtime_error("h5_scan_group_object,H5Literate");
     }
     return objs;
 }
@@ -153,7 +153,7 @@ inline std::vector<std::string> h5_scan_path_object(hid_t file_id, std::string c
     herr_t status;
     hid_t group_id = H5Gopen(file_id, path.c_str(), H5P_DEFAULT);
     if(group_id == H5I_INVALID_HID) {
-        throw std::runtime_error("scan_path_object,OpenGroupFailed,group=\""+path+"\"");
+        throw std::runtime_error("h5_scan_path_object,H5Gopen,group=\""+path+"\"");
     }
     return h5_scan_group_object(group_id);
 }
@@ -163,16 +163,16 @@ inline std::vector<std::string> h5_scan_path_object(hid_t file_id, std::string c
 //===============================================================================
 inline std::vector<std::size_t> h5_query_dataset_dim(hid_t file_id, std::string const& dataset_name) {
     hid_t dataset_id = H5Dopen(file_id, dataset_name.c_str(), H5P_DEFAULT);
-    if(dataset_id == H5I_INVALID_HID) { throw std::runtime_error("query_dataset_dim::H5Dopen"); }
+    if(dataset_id == H5I_INVALID_HID) { throw std::runtime_error("h5_query_dataset_dim,H5Dopen"); }
 
     hid_t dataspace_id = H5Dget_space(dataset_id);
-    if(dataspace_id == H5I_INVALID_HID) { throw std::runtime_error("query_dataset_dim::H5Dget_space"); }
+    if(dataspace_id == H5I_INVALID_HID) { throw std::runtime_error("h5_query_dataset_dim,H5Dget_space"); }
 
     int n_dims = H5Sget_simple_extent_ndims(dataspace_id);
     std::vector<hsize_t> ext_dims(n_dims, 0);
     H5Sget_simple_extent_dims(dataspace_id, ext_dims.data(), nullptr);
 
-    if( H5Dclose(dataset_id) < 0 ) { throw std::runtime_error("query_dataset_dim::H5Dclose"); }
+    if( H5Dclose(dataset_id) < 0 ) { throw std::runtime_error("h5_query_dataset_dim,H5Dclose"); }
     std::vector<std::size_t> ext_dims_casted(n_dims, 0);
     for(int i = 0; i < n_dims; ++i){
         ext_dims_casted[i] = static_cast<std::size_t>(ext_dims[i]);
@@ -183,13 +183,13 @@ inline std::vector<std::size_t> h5_query_dataset_dim(hid_t file_id, std::string 
 template<typename T>
 inline void h5_read_array(hid_t file_id, const std::string& dataset_name, T* data) {
     hid_t dataset_id = H5Dopen(file_id, dataset_name.c_str(), H5P_DEFAULT);
-    if(dataset_id == H5I_INVALID_HID) { throw std::runtime_error("read_array_from_h5::H5Dopen"); }
+    if(dataset_id == H5I_INVALID_HID) { throw std::runtime_error("h5_read_array,H5Dopen"); }
 
     hid_t data_type_id = to_h5_type_id<T>();
     herr_t status = H5Dread(dataset_id, data_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, static_cast<void*>(data));
-    if(status < 0) { throw std::runtime_error("read_array_from_h5::H5Dread"); }
+    if(status < 0) { throw std::runtime_error("h5_read_array,H5Dread"); }
 
-    if( H5Dclose(dataset_id) < 0 ) { throw std::runtime_error("read_array_from_h5::H5Dclose"); }
+    if( H5Dclose(dataset_id) < 0 ) { throw std::runtime_error("h5_read_array,H5Dclose"); }
 }
 
 template<typename Container>
@@ -200,12 +200,12 @@ inline void h5_read_vector(hid_t file_id, const std::string& dataset_name, Conta
     std::vector<std::size_t> dims;
     dims = h5_query_dataset_dim(file_id, dataset_name);
 
-    if(dims.empty()) { throw std::runtime_error("read_vector_from_h5,EmptyDataset"); }
+    if(dims.empty()) { throw std::runtime_error("h5_read_vector,EmptyDataset"); }
 
     std::size_t total_elements = 1;
     for(int d : dims) { total_elements *= d; }
 
-    if(total_elements == 0) { throw std::runtime_error("read_vector_from_h5,ExistZeroDim"); }
+    if(total_elements == 0) { throw std::runtime_error("h5_read_vector,ExistZeroDim"); }
 
     buffer.clear();
     std::fill_n(std::back_inserter(buffer), total_elements, static_cast<value_type>(0));
@@ -222,12 +222,12 @@ inline void h5_read_vector(hid_t file_id, const std::string& dataset_name, std::
     std::vector<std::size_t> dims;
     dims = h5_query_dataset_dim(file_id, dataset_name);
 
-    if(dims.empty()) { throw std::runtime_error("read_vector_from_h5,EmptyDataset"); }
+    if(dims.empty()) { throw std::runtime_error("h5_read_vector,EmptyDataset"); }
 
     std::size_t total_elements = 1;
     for(int d : dims) { total_elements *= d; }
 
-    if(total_elements == 0) { throw std::runtime_error("read_vector_from_h5,ExistZeroDim"); }
+    if(total_elements == 0) { throw std::runtime_error("h5_read_vector,ExistZeroDim"); }
 
     data.clear();
     std::fill_n(std::back_inserter(data), total_elements, static_cast<T>(0));
@@ -238,36 +238,52 @@ inline void h5_read_vector(hid_t file_id, const std::string& dataset_name, std::
 // Basic Write Operations
 //===============================================================================
 template<typename T>
-inline void h5_write_array(hid_t file_id, const std::string& dataset_name, const T* data, std::size_t len) {
-    constexpr std::size_t k_label_rank = 1;
-    hsize_t dims[k_label_rank];
+inline void h5_write_array(hid_t file_id, const std::string& dataset_name, const T* data, std::size_t len, bool enable_zip = true) {
+    constexpr std::size_t k_chunk_size = 8UL<<10; // 8k chunk size
+    constexpr std::size_t k_rank = 1;
+    constexpr int k_compress_level = 3;
+    hsize_t dims[k_rank];
+    hsize_t chunk_dims[k_rank];
     dims[0] = len;
+    chunk_dims[0] = k_chunk_size;
 
-    hid_t dataspace_id = H5Screate_simple(k_label_rank, dims, nullptr);
-    if(dataspace_id == H5I_INVALID_HID) { throw std::runtime_error("WriteArray::H5Screate_simple"); }
+    hid_t dataspace_id = H5Screate_simple(k_rank, dims, nullptr);
+    if(dataspace_id == H5I_INVALID_HID) { throw std::runtime_error("h5_write_array,H5Screate_simple"); }
 
     hid_t data_type_id = to_h5_type_id<T>();
 
-    hid_t dataset_id = H5Dcreate(file_id, dataset_name.c_str(), data_type_id, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    if(dataset_id == H5I_INVALID_HID) { throw std::runtime_error("WriteArray::H5Dcreate"); }
+    hid_t dataset_id;
+    if(enable_zip && len >= k_chunk_size) {
+        hid_t plist_id = H5Pcreate(H5P_DATASET_CREATE);
+        H5Pset_chunk(plist_id, k_rank, chunk_dims);
+        H5Pset_deflate(plist_id, k_compress_level);
+        dataset_id = H5Dcreate(file_id, dataset_name.c_str(), data_type_id, dataspace_id, 
+                               H5P_DEFAULT, plist_id, H5P_DEFAULT);
+    } else {
+        dataset_id = H5Dcreate(file_id, dataset_name.c_str(), data_type_id, dataspace_id, 
+                               H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    }
+    if(dataset_id == H5I_INVALID_HID) { 
+        throw std::runtime_error("h5_write_array,H5Dcreate"); 
+    }
 
     herr_t status = H5Dwrite(dataset_id, data_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
-    if(status < 0) { throw std::runtime_error("WriteArray::H5Dwrite"); }
+    if(status < 0) { throw std::runtime_error("h5_write_array,H5Dwrite"); }
 
-    if( H5Sclose(dataspace_id) < 0 ) { throw std::runtime_error("WriteArray::H5Sclose"); }
-    if( H5Dclose(dataset_id) < 0 ) { throw std::runtime_error("WriteArray::H5Dclose"); }
+    if( H5Sclose(dataspace_id) < 0 ) { throw std::runtime_error("h5_write_array,H5Sclose"); }
+    if( H5Dclose(dataset_id) < 0 ) { throw std::runtime_error("h5_write_array,H5Dclose"); }
 }
 template<typename Container>
-inline void h5_write_vector(hid_t file_id, const std::string& dataset_name, Container const& data, char zip_method) {
+inline void h5_write_vector(hid_t file_id, const std::string& dataset_name, Container const& data, bool enable_zip = true) {
     using value_type = typename Container::value_type;
     std::vector<value_type> buffer(data.begin(), data.end());
-    h5_write_array<value_type>(file_id, dataset_name, buffer.data(), buffer.size());
+    h5_write_array<value_type>(file_id, dataset_name, buffer.data(), buffer.size(), enable_zip);
 }
 template<typename T>
-inline void h5_write_vector(hid_t file_id, const std::string& dataset_name, std::vector<T> const& data, char zip_method) {
+inline void h5_write_vector(hid_t file_id, const std::string& dataset_name, std::vector<T> const& data, bool enable_zip = true) {
     using value_type = T;
     // avoid copy to continuous memory
-    h5_write_array<value_type>(file_id, dataset_name, data.data(), data.size());
+    h5_write_array<value_type>(file_id, dataset_name, data.data(), data.size(), enable_zip);
 }
 
 } // namespace wcc

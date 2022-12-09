@@ -108,12 +108,24 @@ TEST_CASE("H5IOTest", "[WCCommon]") {
         REQUIRE(dims[0] == iarray.size());
         unlink(filename.c_str());
     }
+    SECTION("write - vector compressed") {
+        constexpr std::size_t k_len = 16UL<<10; // 16k
+        std::vector<double> darray(k_len, 0), darray_load;
+        for(std::size_t i = 0; i < k_len; ++i) {
+            darray[i] = i % 1024;
+        }
+        H5File h5_file(filename, 'w');
+        h5_write_vector(h5_file.id(), "/compressed", darray, true);
+        h5_read_vector(h5_file.id(), "/compressed", darray_load);
+        REQUIRE(darray_load == darray);
+        unlink(filename.c_str());
+    }
     SECTION("write - list") {
         std::list<double> dlist{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
         std::list<int   > ilist{1,1,2,3,5,8,11,13};
         H5File h5_file(filename, 'w');
-        h5_write_vector(h5_file.id(), "/d_dataset", dlist, 'z');
-        h5_write_vector(h5_file.id(), "/i_dataset", ilist, 'z');
+        h5_write_vector(h5_file.id(), "/d_dataset", dlist);
+        h5_write_vector(h5_file.id(), "/i_dataset", ilist);
         REQUIRE(h5_has_object(h5_file.id(), "/d_dataset") == true);
         REQUIRE(h5_has_object(h5_file.id(), "/i_dataset") == true);
         auto dims = h5_query_dataset_dim(h5_file.id(), "/d_dataset");
@@ -130,8 +142,8 @@ TEST_CASE("H5IOTest", "[WCCommon]") {
         {
             H5File h5_file(filename, 'w');
             hid_t group_id = h5_make_group_if_not_exist(h5_file.id(), "Data");
-            h5_write_vector(group_id, "d_dataset", darray, 'z');
-            h5_write_vector(group_id, "i_dataset", iarray, 'z');
+            h5_write_vector(group_id, "d_dataset", darray);
+            h5_write_vector(group_id, "i_dataset", iarray);
         } {
             H5File h5_file(filename, 'r');
             std::vector<double> darray_load;
@@ -149,8 +161,8 @@ TEST_CASE("H5IOTest", "[WCCommon]") {
         {
             H5File h5_file(filename, 'w');
             hid_t group_id = h5_make_group_if_not_exist(h5_file.id(), "Data");
-            h5_write_vector(group_id, "d_dataset", dlist, 'z');
-            h5_write_vector(group_id, "i_dataset", ilist, 'z');
+            h5_write_vector(group_id, "d_dataset", dlist);
+            h5_write_vector(group_id, "i_dataset", ilist);
         } {
             H5File h5_file(filename, 'r');
             std::list<double> dlist_load;
