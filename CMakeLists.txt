@@ -20,6 +20,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # find and configure required package
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+include(${CMAKE_SOURCE_DIR}/cmake/FindHdf5.cmake)
 
 add_subdirectory(src)
 add_subdirectory(tests)
