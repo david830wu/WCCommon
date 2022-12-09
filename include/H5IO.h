@@ -112,12 +112,13 @@ void write_array_to_h5(hid_t file_id, const std::string& dataset_name, const T* 
 template<typename Container>
 void write_vector_to_h5(hid_t file_id, const std::string& dataset_name, Container const& data, char zip_method) {
     using value_type = typename Container::value_type;
-    std::vector<value_type> buffer(data.begin(), data.end());
+    std::cout << "call write_vector_to_h5(general)" << std::endl;
     write_array_to_h5<value_type>(file_id, dataset_name, buffer.data(), buffer.size());
 }
 template<typename T>
 void write_vector_to_h5(hid_t file_id, const std::string& dataset_name, std::vector<T> const& data, char zip_method) {
     using value_type = T;
+    // avoid copy to continuous memory
     write_array_to_h5<value_type>(file_id, dataset_name, data.data(), data.size());
 }
 

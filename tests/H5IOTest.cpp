@@ -5,6 +5,7 @@
 
 #include "H5IO.h"
 #include <vector>
+#include <list>
 #include <fmt/format.h>
 #include <unistd.h>
 
@@ -71,8 +72,8 @@ TEST_CASE("H5IOTest", "[WCCommon]") {
         unlink(filename.c_str());
     }
     SECTION("write - list") {
-        std::vector<double> dlist{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
-        std::vector<int   > ilist{1,1,2,3,5,8,11,13};
+        std::list<double> dlist{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
+        std::list<int   > ilist{1,1,2,3,5,8,11,13};
         herr_t status;
         hid_t file_id;
         file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
