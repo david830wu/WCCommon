@@ -31,6 +31,7 @@ target_link_libraries(MyApp PRIVATE WCCommon::WCCommon WCCommon::LogConfig)
 ## Utils
 
 ### CsvIO
+
 Fast, simple and user-friendly utils to read and write CSV file, very efficient for large file.
 Watch the progress bar and leave off with confidence.
 
@@ -66,6 +67,47 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         read_csv(test_file_name, read_depths, [](Depth const& depth){
             return std::get<DepthField::Instrument>(depth) > (k_len + 1) / 2;
         });
+    }
+}
+```
+
+### H5IO
+
+Easy to understand and convenient to call function to command hdf5 file read, write and query operations.
+
+```cpp
+TEST_CASE("H5IOTest", "[WCCommon]") {
+    std::string filename = "H5IOTestData.h5";
+    std::vector<double> darray{1.1,1.1,2.1,3.1,5.1,8.1,11.1,13.1};
+    std::vector<int   > iarray{1,1,2,3,5,8,11,13};
+
+    SECTION("write") {
+        H5File h5_file(filename, 'w');
+        hid_t group_id = h5_make_group_if_not_exist(h5_file.id(), "Data");
+        h5_write_vector(h5_file.id(), "/Data/d_dataset", darray);  // abs path
+        h5_write_vector(group_id    , "i_dataset"      , iarray);  // rel path
+        H5Gclose(group_id);
+    }
+    SECTION("Query") {
+        H5File h5_file(filename, 'w');
+        REQUIRE(h5_has_object(h5_file.id(), "Data") == true);            // group exist
+        REQUIRE(h5_has_object(h5_file.id(), "/Data/d_dataset") == true); // dataset exist
+        std::vector<std::string> objs = h5_scan_path_object(h5_file.id(), "Data");
+        REQUIRE(objs.size() == 2);
+        REQUIRE(objs[0] == "d_dataset");
+        REQUIRE(objs[1] == "i_dataset");
+        std::vector<std::size_t> dims = h5_query_dataset_dim(h5_file.id(), "/Data/d_dataset");
+        REQUIRE(dims.size() == 1);
+        REQUIRE(dims[0] == dlist.size());
+    }
+    SECTION("Read") {
+        H5File h5_file(filename, 'r');
+        std::vector<double> darray_load;
+        std::vector<int   > iarray_load;
+        h5_read_vector(h5_file.id(), "/Data/d_dataset", darray_load);
+        h5_read_vector(h5_file.id(), "/Data/i_dataset", iarray_load);
+        REQUIRE(darray_load == darray);
+        REQUIRE(iarray_load == iarray);
     }
 }
 ```
