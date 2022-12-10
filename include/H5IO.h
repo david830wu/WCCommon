@@ -266,7 +266,7 @@ inline void h5_write_array(hid_t file_id, const std::string& dataset_name, const
         throw std::runtime_error("h5_write_array,H5Dcreate"); 
     }
 
-    herr_t status = H5Dwrite(dataset_id, data_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, static_cast<void*>(data));
+    herr_t status = H5Dwrite(dataset_id, data_type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, static_cast<const void*>(data));
     if(status < 0) { throw std::runtime_error("h5_write_array,H5Dwrite"); }
 
     if( H5Sclose(dataspace_id) < 0 ) { throw std::runtime_error("h5_write_array,H5Sclose"); }
