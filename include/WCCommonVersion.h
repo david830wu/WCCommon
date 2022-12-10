@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.4.1"
-#define WCCOMMON_VERSION_MESSAGE "Fixed generic version read_csv NaN bug" 
+#define WCCOMMON_VERSION         "1.5.0"
+#define WCCOMMON_VERSION_MESSAGE "Add H5IO utils" 

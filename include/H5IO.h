@@ -22,7 +22,7 @@ namespace wcc {
 template <typename T>
 struct H5TypeMatchFalse { enum { value = false }; };
 template<typename T> inline hid_t to_h5_type_id() { 
-    static_assert(H5TypeMatchFalse<T>::value, "Undefined target HDF5 type"); 
+    static_assert(H5TypeMatchFalse<T>::value, "to_h5_type_id,UndefinedType"); 
     return H5T_NATIVE_CHAR; 
 }
 template<> inline hid_t to_h5_type_id<bool              >() { return H5T_NATIVE_HBOOL ; } 
