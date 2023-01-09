@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.5.0"
-#define WCCOMMON_VERSION_MESSAGE "Add H5IO utils" 
+#define WCCOMMON_VERSION         "1.5.1"
+#define WCCOMMON_VERSION_MESSAGE "Fixed read_csv/write_csv nan value bug" 
