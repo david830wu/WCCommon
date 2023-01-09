@@ -110,8 +110,13 @@ inline int write_token(char* buffer, std::size_t size, T const& value, char end_
     constexpr static int k_max_token_size = 32 + 1;
     int used;
     char token_buffer[k_max_token_size];
-    if(size < 2)
+    if(size < 2) {
         return -1;
+    }
+    if(isnan(value)) {
+        buffer[0] = end_delim;
+        return 1;
+    }
     used = value_to_string<T>(token_buffer, k_max_token_size, value);
     if((used < 0) || (used + 2 > size)) {
         buffer[0] = '\0'; // write nothing;
@@ -204,13 +209,15 @@ inline const char* string_to_tuple(const char* line, std::tuple<Args...>& tuple,
     return line + line_buffer.size() + 1;
 }
 
-
 template<typename T>
 inline std::string to_string_safe(const T& value) {
-    if constexpr (std::is_same_v<T, char>) {
-        return std::string(1, value);
+    constexpr std::size_t k_buffer_size = 32;
+    char buffer[k_buffer_size];
+    if (isnan(value)) {
+        return std::string();
     } else {
-        return std::to_string(value);
+        value_to_string(buffer, k_buffer_size, value);
+        return buffer;
     }
 }
 

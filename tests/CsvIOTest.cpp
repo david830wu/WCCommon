@@ -171,6 +171,28 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         REQUIRE(wcc::isnan(std::get<DepthField::Status         >(read_depths[2])));
         REQUIRE(wcc::isnan(std::get<DepthField::AskVol1        >(read_depths[3])));
     }
+    SECTION("write with NaN") {
+        std::string csv_with_nan = 
+            "1,,7.8000,7.8000,1000,7.7900,3100,T,103850433\n"
+            "2,133000000,,7.8000,1000,7.7900,3100,T,103850433\n"
+            "3,133000000,7.8000,7.8000,1000,7.7900,3100,,103850433\n"
+            "4,133000000,7.8000,7.8000,,7.7900,3100,T,103850433\n";
+        std::ofstream of(test_file_name);
+        of << csv_with_nan;
+        of.close();
+        std::vector<Depth> depths;
+        read_csv(test_file_name, depths);
+        std::string test_nan_file_name = test_file_name;
+        std::size_t pos = test_nan_file_name.find('.');
+        test_nan_file_name.insert(pos+1, "nan.");
+        write_csv(test_nan_file_name, depths);
+        std::ifstream in(test_nan_file_name);
+        std::ostringstream ss;
+        ss << in.rdbuf();
+        in.close();
+        std::string file_content = ss.str();
+        REQUIRE(file_content == csv_with_nan);
+    }
     SECTION("write with app mode") {
         write_csv(test_file_name, depths, 'o');
         write_csv(test_file_name, depths, 'a');
