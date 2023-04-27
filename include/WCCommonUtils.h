@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <libgen.h>
 
 namespace wcc {
 
@@ -59,6 +60,16 @@ inline std::string readline(FILE* source) {
     return command_buffer;
 }
 
+// extract filename from path
+inline std::string get_basename(const std::string& pathname) {
+    char* c_path = const_cast<char*>(pathname.c_str());
+    return basename(c_path);
+}
+// extract directory from path
+inline std::string get_dirname(const std::string& pathname) {
+    char* c_path = const_cast<char*>(pathname.c_str());
+    return dirname(c_path);
+}
 // create folder if the folder not exist
 // returns:
 //   0: if the folder has already been exist
