@@ -62,13 +62,15 @@ inline std::string readline(FILE* source) {
 
 // extract filename from path
 inline std::string get_basename(const std::string& pathname) {
-    char* c_path = const_cast<char*>(pathname.c_str());
-    return basename(c_path);
+    std::vector<char> buffer(pathname.size()+1, '\0');
+    std::copy(pathname.begin(), pathname.end(), buffer.begin());
+    return basename(buffer.data());
 }
 // extract directory from path
 inline std::string get_dirname(const std::string& pathname) {
-    char* c_path = const_cast<char*>(pathname.c_str());
-    return dirname(c_path);
+    std::vector<char> buffer(pathname.size()+1, '\0');
+    std::copy(pathname.begin(), pathname.end(), buffer.begin());
+    return dirname(buffer.data());
 }
 // create folder if the folder not exist
 // returns:
