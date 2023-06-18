@@ -1,4 +1,4 @@
-find_package(HDF5 QUIET)
+find_package(HDF5)
 
 if(HDF5_FOUND)
     message(STATUS "Found Hdf5: create Hdf5::Hdf5 interface target")

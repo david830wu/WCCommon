@@ -12,11 +12,6 @@ endif()
 
 enable_testing()
 
-# enable c++17 globally
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 find_package(Catch2 REQUIRED)
 
 # list and compile executable
