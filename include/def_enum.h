@@ -1,3 +1,4 @@
+#pragma once
 
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/preprocessor/control/iif.hpp>
@@ -8,6 +9,7 @@
 #include <boost/preprocessor/tuple/size.hpp>
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/seq/variadic_seq_to_seq.hpp>
+#include <ostream>
 
 #define DEFINE_ENUM_VALUE(r, data, elem)                       \
     BOOST_PP_TUPLE_ELEM(0, elem)                               \

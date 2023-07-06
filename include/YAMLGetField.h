@@ -33,10 +33,11 @@
 #pragma once
 
 #include "NumericTime.h"
-
+#include "WCCommonUtils.h"
 #include <fmt/format.h>
 #include <regex>
 #include <yaml-cpp/yaml.h>
+#include <string_view>
 
 template<typename T>
 inline auto render_config_field(T const& value, std::string const& today_str) {
@@ -96,3 +97,21 @@ namespace YAML {
     } else { \
         throw std::runtime_error(fmt::format("Cannot find \"{}\" in Node \"{}\"", #key, #node)); \
     }
+
+namespace wcc {
+
+template <typename T = std::string, typename StringViewLike = std::string_view>
+inline T get_field(YAML::Node const& node, StringViewLike key, StringViewLike node_name = "") {
+    if (YAML::Node key_field = node[key]) {
+        try {
+            auto today_str = get_today_str();
+            return render_config_field(key_field.as<T>(), today_str); 
+        } catch(YAML::TypedBadConversion<T>& e) { 
+            throw std::runtime_error(fmt::format("Bad conversion of \"{}\" in Node \"{}\"", key, node_name)); 
+        } 
+    } else { 
+        throw std::runtime_error(fmt::format("Cannot find \"{}\" in Node \"{}\"", key, node_name)); 
+    }
+}
+
+}  // namespace wcc
