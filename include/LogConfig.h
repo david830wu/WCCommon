@@ -57,8 +57,28 @@ inline void config_log(std::string_view config_file) {
     }
 
     namespace fs = std::filesystem;
-    impl::s_logger_config_file = config_file;
-    YAML::Node config = YAML::LoadFile(impl::s_logger_config_file);
+
+    #if defined(TEST)
+        impl::s_logger_config_file = "TEST";
+        YAML::Node config = YAML::Load(R"(
+          default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
+          default_level     : "info"
+          default_log_dir   : "./log"
+          default_log_prefix: "TEST"
+          sinks:
+            - stdout
+          loggers:
+            - default
+            - TEST
+          set_error_loggers:
+            - default 
+          set_debug_loggers:
+            - TEST        
+        )");
+    #else
+        impl::s_logger_config_file = config_file;
+        YAML::Node config = YAML::LoadFile(impl::s_logger_config_file);
+    #endif
 
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -138,7 +158,11 @@ using format_string_t = spdlog::format_string_t<Args...>;
 
 template <StringLiteral STR> class AttachLogger {
   public:
+#if defined(TEST)
+    AttachLogger() : p_logger_(get_logger("TEST")) {}
+#else
     AttachLogger() : p_logger_(get_logger(STR.value)) {}
+#endif
 
     template <typename... Args>
     void log_trace(format_string_t<Args...> fmt, Args &&...args) const {
@@ -175,5 +199,41 @@ template <StringLiteral STR> class AttachLogger {
   protected:
     mutable spdlog::logger* p_logger_;
 };
+
+
+// Free functions using default logger
+
+template <typename... Args>
+inline void log_trace(format_string_t<Args...> fmt, Args &&...args) {
+    get_logger("default")->trace(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+inline void log_debug(format_string_t<Args...> fmt, Args &&...args) {
+    get_logger("default")->debug(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void log_info(format_string_t<Args...> fmt, Args &&...args) {
+    get_logger("default")->info(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+inline void log_warn(format_string_t<Args...> fmt, Args &&...args) {
+    get_logger("default")->warn(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+inline void log_error(format_string_t<Args...> fmt, Args &&...args) {
+    get_logger("default")->error(fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+inline void log_critical(format_string_t<Args...> fmt, Args &&...args) {
+    get_logger("default")->critical(fmt, std::forward<Args>(args)...);
+}
+
+inline void log_flush() { get_logger("default")->flush(); }
+
 
 } // namespace wcc
