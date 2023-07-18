@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+#include <list>
+
 namespace wcc {
 
 template <typename T> class delegate_base;
@@ -131,7 +134,7 @@ public:
         return (ptr != nullptr) || (!this->is_null());
     } // operator !=
 
-    size_t size() const { return invocationList.size(); }
+    std::size_t size() const { return invocationList.size(); }
 
     multicast_delegate &operator=(const multicast_delegate &) = delete;
     multicast_delegate(const multicast_delegate &) = delete;
@@ -158,7 +161,7 @@ public:
         return *this;
     } // operator +=
 
-    template <typename LAMBDA> // template instantiation is not neededm, will be deduced/inferred:
+    template <typename LAMBDA> // template instantiation is not needed, will be deduced/inferred:
     multicast_delegate &operator+=(const LAMBDA &lambda) {
         delegate<RET(PARAMS...)> d = delegate<RET(PARAMS...)>::template create<LAMBDA>(lambda);
         return *this += d;
@@ -179,7 +182,7 @@ public:
 
     template <typename HANDLER>
     void operator()(PARAMS... arg, HANDLER handler) const {
-        size_t index = 0;
+        std::size_t index = 0;
         for (auto &item : invocationList) {
             RET value = (*(item->stub))(item->object, arg...);
             handler(index, &value);
@@ -187,10 +190,10 @@ public:
         } // loop
     }     // operator()
 
-    void operator()(PARAMS... arg, delegate<void(size_t, RET *)> handler) const {
+    void operator()(PARAMS... arg, delegate<void(std::size_t, RET *)> handler) const {
         operator()<decltype(handler)>(arg..., handler);
     } // operator()
-    void operator()(PARAMS... arg, std::function<void(size_t, RET *)> handler) const {
+    void operator()(PARAMS... arg, std::function<void(std::size_t, RET *)> handler) const {
         operator()<decltype(handler)>(arg..., handler);
     } // operator()
 
