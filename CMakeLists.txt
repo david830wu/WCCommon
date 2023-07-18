@@ -1,6 +1,3 @@
-# invoke:
-# cmake .. -DCMAKE_PREFIX_PATH="/home/pliu/local/HDF5/1.10.4;/home/pliu/local;/home/pliu/dev"
-
 cmake_minimum_required(VERSION 3.12)
 
 project(WCCommon
@@ -28,7 +25,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(HDF5_USE_STATIC_LIBRARIES ON)
 include(${CMAKE_SOURCE_DIR}/cmake/FindHdf5.cmake)
 
 add_subdirectory(src)
