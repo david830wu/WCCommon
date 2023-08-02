@@ -100,9 +100,11 @@ namespace YAML {
 
 namespace wcc {
 
-template <typename T = std::string, typename StringViewLike = std::string_view>
-inline T get_field(YAML::Node const& node, StringViewLike key, StringViewLike node_name = "") {
+template <typename T = std::string>
+inline T get_field(YAML::Node const& node, std::string const& key, std::string const& node_name = "") {
     if (YAML::Node key_field = node[key]) {
+        if constexpr (std::is_same_v<T, YAML::Node>)
+            return key_field;
         try {
             auto today_str = get_today_str();
             return render_config_field(key_field.as<T>(), today_str); 
