@@ -15,6 +15,7 @@ if(HDF5_FOUND)
         ihdf5
     INTERFACE
         ${HDF5_LIBRARIES}
+        dl sz z
     )
     add_library(Hdf5::Hdf5 ALIAS ihdf5)
 endif()
