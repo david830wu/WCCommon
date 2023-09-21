@@ -21,7 +21,7 @@ TEST_CASE("WCCommonTest", "[WCCommon]") {
     SECTION("spdlog-levels") {
         wcc::config_log(log_config_file);
         wcc::mkdir_if_not_exist("log");
-        auto p_logger = spdlog::get("main");
+        auto p_logger = wcc::get_logger("main");
         p_logger->debug("This is a {} message", "debug");
         p_logger->info("pi = {:.4f}", 3.1415926);
         p_logger->warn("The answer is {:6d}", 42);

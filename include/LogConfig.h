@@ -18,23 +18,23 @@
 
 namespace wcc {
 
-namespace impl {
-static std::string s_logger_config_file;
+struct impl {  // internal stuff; make impl a struct so that static members can be inlined and linked as one unit
+    struct string_hash {
+        using hash_type = std::hash<std::string_view>;
+        using is_transparent = void;
 
-struct string_hash {
-    using hash_type = std::hash<std::string_view>;
-    using is_transparent = void;
+        std::size_t operator()(const char *str) const { return hash_type{}(str); }
+        std::size_t operator()(std::string_view str) const {
+            return hash_type{}(str);
+        }
+        std::size_t operator()(std::string const &str) const {
+            return hash_type{}(str);
+        }
+    };
 
-    std::size_t operator()(const char *str) const { return hash_type{}(str); }
-    std::size_t operator()(std::string_view str) const {
-        return hash_type{}(str);
-    }
-    std::size_t operator()(std::string const &str) const {
-        return hash_type{}(str);
-    }
-};
-static std::unordered_map<std::string, spdlog::logger, string_hash, std::equal_to<>> s_logger_table;
-} // namespace impl
+    inline static std::string s_logger_config_file;
+    inline static std::unordered_map<std::string, spdlog::logger, string_hash, std::equal_to<>> s_logger_table;
+};  // struct impl
 
 inline spdlog::logger*
 get_logger(std::string_view logger_name) {
