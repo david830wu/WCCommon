@@ -142,6 +142,8 @@ inline void config_log(std::string_view config_file) {
         logger.set_level(spdlog::level::debug);
     }
 
+    for (auto [_, logger] : impl::s_logger_table) logger.flush_on(spdlog::level::warn);
+
     once = true;
 }
 
@@ -157,7 +159,7 @@ template <typename... Args>
 using format_string_t = spdlog::format_string_t<Args...>;
 
 template <StringLiteral STR> class AttachLogger {
-  public:
+public:
 #if defined(TEST)
     AttachLogger() : p_logger_(get_logger("TEST")) {}
 #else
@@ -196,7 +198,7 @@ template <StringLiteral STR> class AttachLogger {
 
     void log_flush() const { p_logger_->flush(); }
 
-  protected:
+protected:
     mutable spdlog::logger* p_logger_;
 };
 
