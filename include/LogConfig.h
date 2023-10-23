@@ -9,6 +9,7 @@
 #include <unistd.h> // for getpid()
 #include <unordered_map>
 #include <vector>
+#include <string_view>
 
 #include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -47,7 +48,7 @@ get_logger(std::string_view logger_name) {
     throw std::runtime_error(fmt::format("MissingLogger:{}", logger_name));
 }
 
-inline void config_log(std::string_view config_file) {
+inline void config_log(YAML::Node const& cfg) {
     static bool once = false;
 
     if (once) {
@@ -56,8 +57,74 @@ inline void config_log(std::string_view config_file) {
         return;
     }
 
-    namespace fs = std::filesystem;
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::ostringstream today_oss;
+    today_oss << std::put_time(&tm, "%Y%m%d");
+    std::string today_str = today_oss.str();
 
+    std::regex today_regex("\\$\\{today\\}");
+    std::string default_log_dir = cfg["default_log_dir"].as<std::string>();
+    default_log_dir =
+        std::regex_replace(default_log_dir, today_regex, today_str);
+    std::string default_log_prefix =
+        cfg["default_log_prefix"].as<std::string>();
+    default_log_prefix =
+        std::regex_replace(default_log_prefix, today_regex, today_str);
+
+    std::string log_file = default_log_dir + '/' + default_log_prefix + ".pid." + std::to_string(getpid()) + ".log";
+
+    // create log_dir if not exist
+    std::filesystem::create_directories(default_log_dir);
+
+    std::vector<spdlog::sink_ptr> sinks;
+    auto sink_table = cfg["sinks"].as<std::vector<std::string>>();
+    for (const auto &sink : sink_table) {
+        if (sink == "stdout")
+            sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
+        if (sink == "basic_file")
+            sinks.push_back(
+                std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file));
+    }
+
+    for (auto const &name : cfg["loggers"]) {
+        std::string name_str = name.as<std::string>();
+        impl::s_logger_table.emplace(name_str, spdlog::logger{name_str, std::begin(sinks), std::end(sinks)});
+    }
+
+    auto format_str = cfg["default_format"].as<std::string>();
+    auto lvl_str = cfg["default_level"].as<std::string>();
+    auto lvl = lvl_str == "info"   ? spdlog::level::info
+               : lvl_str == "warn" ? spdlog::level::warn
+               : lvl_str == "err"  ? spdlog::level::err
+               : lvl_str == "critical" ? spdlog::level::critical
+               : throw std::runtime_error("unknown log level");
+    for (auto [_, logger] : impl::s_logger_table) {
+        logger.set_pattern(format_str);
+        logger.set_level(lvl);
+    }
+
+    // special setting
+    // Disable List
+    auto set_error_loggers = cfg["set_error_loggers"].as<std::vector<std::string>>();
+    for (const auto &logger_name : set_error_loggers) {
+        auto logger = impl::s_logger_table.at(logger_name);
+        logger.set_level(spdlog::level::err);
+    }
+
+    // Enable List
+    auto set_debug_loggers = cfg["set_debug_loggers"].as<std::vector<std::string>>();
+    for (const auto &logger_name : set_debug_loggers) {
+        auto logger = impl::s_logger_table.at(logger_name);
+        logger.set_level(spdlog::level::debug);
+    }
+
+    for (auto [_, logger] : impl::s_logger_table) logger.flush_on(spdlog::level::warn);
+
+    once = true;
+}
+
+inline void config_log(std::string_view config_file) {
     #if defined(TEST)
         impl::s_logger_config_file = "TEST";
         YAML::Node config = YAML::Load(R"(
@@ -77,74 +144,9 @@ inline void config_log(std::string_view config_file) {
         )");
     #else
         impl::s_logger_config_file = config_file;
-        YAML::Node config = YAML::LoadFile(impl::s_logger_config_file);
+        YAML::Node cfg = YAML::LoadFile(impl::s_logger_config_file);
     #endif
-
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    std::ostringstream today_oss;
-    today_oss << std::put_time(&tm, "%Y%m%d");
-    std::string today_str = today_oss.str();
-
-    std::regex today_regex("\\$\\{today\\}");
-    std::string default_log_dir = config["default_log_dir"].as<std::string>();
-    default_log_dir =
-        std::regex_replace(default_log_dir, today_regex, today_str);
-    std::string default_log_prefix =
-        config["default_log_prefix"].as<std::string>();
-    default_log_prefix =
-        std::regex_replace(default_log_prefix, today_regex, today_str);
-
-    std::string log_file = default_log_dir + '/' + default_log_prefix + ".pid." + std::to_string(getpid()) + ".log";
-
-    // create log_dir if not exist
-    fs::create_directories(default_log_dir);
-
-    std::vector<spdlog::sink_ptr> sinks;
-    auto sink_table = config["sinks"].as<std::vector<std::string>>();
-    for (const auto &sink : sink_table) {
-        if (sink == "stdout")
-            sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
-        if (sink == "basic_file")
-            sinks.push_back(
-                std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file));
-    }
-
-    for (auto const &name : config["loggers"]) {
-        std::string name_str = name.as<std::string>();
-        impl::s_logger_table.emplace(name_str, spdlog::logger{name_str, std::begin(sinks), std::end(sinks)});
-    }
-
-    auto format_str = config["default_format"].as<std::string>();
-    auto lvl_str = config["default_level"].as<std::string>();
-    auto lvl = lvl_str == "info"   ? spdlog::level::info
-               : lvl_str == "warn" ? spdlog::level::warn
-               : lvl_str == "err"  ? spdlog::level::err
-               : lvl_str == "critical" ? spdlog::level::critical
-               : throw std::runtime_error("unknown log level");
-    for (auto [_, logger] : impl::s_logger_table) {
-        logger.set_pattern(format_str);
-        logger.set_level(lvl);
-    }
-
-    // special setting
-    // Disable List
-    auto set_error_loggers = config["set_error_loggers"].as<std::vector<std::string>>();
-    for (const auto &logger_name : set_error_loggers) {
-        auto logger = impl::s_logger_table.at(logger_name);
-        logger.set_level(spdlog::level::err);
-    }
-
-    // Enable List
-    auto set_debug_loggers = config["set_debug_loggers"].as<std::vector<std::string>>();
-    for (const auto &logger_name : set_debug_loggers) {
-        auto logger = impl::s_logger_table.at(logger_name);
-        logger.set_level(spdlog::level::debug);
-    }
-
-    for (auto [_, logger] : impl::s_logger_table) logger.flush_on(spdlog::level::warn);
-
-    once = true;
+    config_log(cfg);
 }
 
 // Following need c++20
