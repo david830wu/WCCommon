@@ -109,14 +109,14 @@ inline void config_log(YAML::Node const& cfg) {
     // Disable List
     auto set_error_loggers = cfg["set_error_loggers"].as<std::vector<std::string>>();
     for (const auto &logger_name : set_error_loggers) {
-        auto logger = impl::s_logger_table.at(logger_name);
+        auto& logger = impl::s_logger_table.at(logger_name);
         logger.set_level(spdlog::level::err);
     }
 
     // Enable List
     auto set_debug_loggers = cfg["set_debug_loggers"].as<std::vector<std::string>>();
     for (const auto &logger_name : set_debug_loggers) {
-        auto logger = impl::s_logger_table.at(logger_name);
+        auto& logger = impl::s_logger_table.at(logger_name);
         logger.set_level(spdlog::level::debug);
     }
 
