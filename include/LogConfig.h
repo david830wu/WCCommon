@@ -6,35 +6,26 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
-#include <unistd.h> // for getpid()
-#include <unordered_map>
-#include <vector>
 #include <string_view>
-
+#include <unistd.h> // for getpid()
+#include <vector>
 #include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/container/flat_map.hpp>
 
 namespace wcc {
 
 struct impl {  // internal stuff; make impl a struct so that static members can be inlined and linked as one unit
-    struct string_hash {
-        using hash_type = std::hash<std::string_view>;
+    struct string_less : std::less<std::string> {
         using is_transparent = void;
-
-        std::size_t operator()(const char *str) const { return hash_type{}(str); }
-        std::size_t operator()(std::string_view str) const {
-            return hash_type{}(str);
-        }
-        std::size_t operator()(std::string const &str) const {
-            return hash_type{}(str);
-        }
+        bool operator()(std::string_view sv1, std::string_view sv2) const { return sv1 < sv2; }
     };
 
     inline static std::string s_logger_config_file;
-    inline static std::unordered_map<std::string, spdlog::logger, string_hash, std::equal_to<>> s_logger_table;
+    inline static boost::container::flat_map<std::string, spdlog::logger, string_less> s_logger_table;
 };  // struct impl
 
 inline spdlog::logger*
@@ -87,6 +78,7 @@ inline void config_log(YAML::Node const& cfg) {
                 std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file));
     }
 
+    impl::s_logger_table.reserve(cfg["loggers"].size());
     for (auto const &name : cfg["loggers"]) {
         std::string name_str = name.as<std::string>();
         impl::s_logger_table.emplace(name_str, spdlog::logger{name_str, std::begin(sinks), std::end(sinks)});
