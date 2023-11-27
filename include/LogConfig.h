@@ -120,7 +120,7 @@ inline void config_log(YAML::Node const& cfg) {
 inline void config_log(std::string_view config_file) {
     #if defined(TEST)
         impl::s_logger_config_file = "TEST";
-        YAML::Node config = YAML::Load(R"(
+        YAML::Node cfg = YAML::Load(R"(
           default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
           default_level     : "info"
           default_log_dir   : "./log"
