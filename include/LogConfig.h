@@ -99,17 +99,23 @@ inline void config_log(YAML::Node const& cfg) {
 
     // special setting
     // Disable List
-    auto set_error_loggers = cfg["set_error_loggers"].as<std::vector<std::string>>();
-    for (const auto &logger_name : set_error_loggers) {
-        auto& logger = impl::s_logger_table.at(logger_name);
-        logger.set_level(spdlog::level::err);
+    auto const& cfg_err_loggers = cfg["set_error_loggers"];
+    if (!cfg_err_loggers.IsNull()) {
+        auto set_error_loggers = cfg_err_loggers.as<std::vector<std::string>>();
+        for (const auto &logger_name : set_error_loggers) {
+            auto& logger = impl::s_logger_table.at(logger_name);
+            logger.set_level(spdlog::level::err);
+        }
     }
 
     // Enable List
-    auto set_debug_loggers = cfg["set_debug_loggers"].as<std::vector<std::string>>();
-    for (const auto &logger_name : set_debug_loggers) {
-        auto& logger = impl::s_logger_table.at(logger_name);
-        logger.set_level(spdlog::level::debug);
+    auto const& cfg_dbg_loggers = cfg["set_debug_loggers"];
+    if (!cfg_dbg_loggers.IsNull()) {
+        auto set_debug_loggers = cfg_dbg_loggers.as<std::vector<std::string>>();
+        for (const auto &logger_name : set_debug_loggers) {
+            auto& logger = impl::s_logger_table.at(logger_name);
+            logger.set_level(spdlog::level::debug);
+        }
     }
 
     for (auto [_, logger] : impl::s_logger_table) logger.flush_on(spdlog::level::warn);
@@ -198,39 +204,39 @@ protected:
 };
 
 
-// Free functions using default logger
+// Free functions using main logger
 
 template <typename... Args>
 inline void log_trace(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("default")->trace(fmt, std::forward<Args>(args)...);
+    get_logger("main")->trace(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_debug(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("default")->debug(fmt, std::forward<Args>(args)...);
+    get_logger("main")->debug(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void log_info(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("default")->info(fmt, std::forward<Args>(args)...);
+    get_logger("main")->info(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_warn(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("default")->warn(fmt, std::forward<Args>(args)...);
+    get_logger("main")->warn(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_error(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("default")->error(fmt, std::forward<Args>(args)...);
+    get_logger("main")->error(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_critical(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("default")->critical(fmt, std::forward<Args>(args)...);
+    get_logger("main")->critical(fmt, std::forward<Args>(args)...);
 }
 
-inline void log_flush() { get_logger("default")->flush(); }
+inline void log_flush() { get_logger("main")->flush(); }
 
 
 } // namespace wcc
