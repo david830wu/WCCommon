@@ -11,6 +11,7 @@
 #include <chrono>
 #include <limits>
 #include <date/date.h>
+#include <fmt/format.h>
 
 #include <time.h>
 
@@ -159,3 +160,19 @@ public:
         return buffer;
     }
 }
+
+template <>
+struct fmt::formatter<wcc::NumericTime> {
+    constexpr auto parse(format_parse_context& ctx) {
+        auto it = ctx.begin(), end = ctx.end();
+        if (it != end && *it != '}') {
+            ctx.error_handler().on_error( "invalid format");
+        }
+        return it;
+    }
+
+    template <typename FmtContext>
+    constexpr auto format(wcc::NumericTime tm, FmtContext& ctx) const {
+        return fmt::format_to(ctx.out(), "{:02d}:{:02d}:{:02d}.{:03d}", tm.hour(), tm.min(), tm.sec(), tm.ms());
+    }
+};
