@@ -134,10 +134,9 @@ inline void config_log(std::string_view config_file) {
           sinks:
             - stdout
           loggers:
-            - default
+            - main 
             - TEST
           set_error_loggers:
-            - default 
           set_debug_loggers:
             - TEST        
         )");

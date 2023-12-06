@@ -10,6 +10,8 @@ if(POLICY CMP0076)
   cmake_policy(SET CMP0076 NEW)
 endif()
 
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
 find_package(spdlog REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(fmt REQUIRED)
@@ -39,10 +41,15 @@ INTERFACE
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+target_compile_definitions(
+    LogConfig 
+INTERFACE
+    SPDLOG_FMT_EXTERNAL_HO
+)
 target_link_libraries(
     LogConfig
 INTERFACE
-    spdlog::spdlog
+    spdlog::spdlog_header_only
 )
 add_library(LogConfig::LogConfig ALIAS LogConfig)
 

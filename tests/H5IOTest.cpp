@@ -9,8 +9,8 @@
 #include <fmt/format.h>
 #include <unistd.h>
 
-#define CATCH_CONFIG_MAIN
-#include "catch2/catch.hpp"
+//#define CATCH_CONFIG_MAIN
+#include <catch2/catch_all.hpp>
 
 using namespace wcc;
 

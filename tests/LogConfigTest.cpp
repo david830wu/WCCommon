@@ -7,11 +7,11 @@
 #include "WCCommonUtils.h" // for mkdir_if_not_exist
         
 
-#define CATCH_CONFIG_MAIN
-#include "catch2/catch.hpp"
+//#define CATCH_CONFIG_MAIN
+#include <catch2/catch_all.hpp>
 
 TEST_CASE("WCCommonTest", "[WCCommon]") {
-    std::string log_config_file= "tests/LogConfig.yaml";
+    std::string log_config_file= "LogConfig.yaml";
     SECTION("spdlog-get") {
         wcc::check_file_exist(log_config_file);
         wcc::mkdir_if_not_exist("log");

@@ -165,9 +165,7 @@ template <>
 struct fmt::formatter<wcc::NumericTime> {
     constexpr auto parse(format_parse_context& ctx) {
         auto it = ctx.begin(), end = ctx.end();
-        if (it != end && *it != '}') {
-            ctx.error_handler().on_error( "invalid format");
-        }
+        if (it != end && *it != '}') throw format_error("invalid format");
         return it;
     }
 
