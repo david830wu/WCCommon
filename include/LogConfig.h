@@ -123,8 +123,8 @@ inline void config_log(YAML::Node const& cfg) {
     once = true;
 }
 
-inline void config_log(std::string_view config_file) {
-    #if defined(TEST)
+#if defined(TEST)
+    inline void config_log() {
         impl::s_logger_config_file = "TEST";
         YAML::Node cfg = YAML::Load(R"(
           default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
@@ -140,10 +140,11 @@ inline void config_log(std::string_view config_file) {
           set_debug_loggers:
             - TEST        
         )");
-    #else
+#else
+    inline void config_log(std::string_view config_file) {
         impl::s_logger_config_file = config_file;
         YAML::Node cfg = YAML::LoadFile(impl::s_logger_config_file);
-    #endif
+#endif
     config_log(cfg);
 }
 
