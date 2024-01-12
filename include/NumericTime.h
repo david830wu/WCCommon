@@ -18,13 +18,13 @@
 namespace wcc {
 
     // class NumericTime 
-    // NumericTime stores time as unsigned int with millisecond resolution
+    // NumericTime stores time as uint32_t with millisecond resolution
     // 
     class NumericTime {
     public:
         static const NumericTime NaN;
 
-        constexpr NumericTime(unsigned int int_time = 240000'000)
+        constexpr NumericTime(uint32_t int_time = 240000'000)
           : data_(int_time)
         {}
 
@@ -38,7 +38,7 @@ namespace wcc {
         {}
         ~NumericTime() = default;
 
-        operator unsigned int() const { return data_; }
+        operator uint32_t() const { return data_; }
 
         std::string str() const { 
             constexpr int buffer_size = 16;
@@ -63,7 +63,7 @@ namespace wcc {
                 time.subseconds().count()
             );
         }
-        unsigned int hour() const noexcept {
+        uint32_t hour() const noexcept {
             int remains = data_, hour;
             /*ms   = remains % 1000;*/ remains /= 1000;
             /*sec  = remains % 100 ;*/ remains /= 100 ;
@@ -71,28 +71,28 @@ namespace wcc {
             hour = remains % 100 ; 
             return hour;
         }
-        unsigned int min() const noexcept {
+        uint32_t min() const noexcept {
             int remains = data_, min;
             /*ms   = remains % 1000;*/ remains /= 1000;
             /*sec  = remains % 100 ;*/ remains /= 100 ;
             min  = remains % 100 ;
             return min;
         }
-        unsigned int sec() const noexcept {
+        uint32_t sec() const noexcept {
             int remains = data_, sec;
             /*ms   = remains % 1000;*/ remains /= 1000;
             sec  = remains % 100 ; 
             return sec;
         }
-        unsigned int ms() const noexcept {
+        uint32_t ms() const noexcept {
             int remains = data_, ms;
             ms   = remains % 1000; 
             return ms;
         }
-        unsigned int total_ms() const noexcept {
+        uint32_t total_ms() const noexcept {
             return (((hour() * 60) + min()) * 60 + sec()) * 1000 + ms();
         }
-        unsigned int data() const noexcept {
+        uint32_t data() const noexcept {
             return data_;
         }
 
@@ -103,8 +103,8 @@ namespace wcc {
 
     private:
 
-        unsigned int to_timestamp(int hour, int min, int sec, int ms) {
-            unsigned int timestamp = 240000'000;
+        uint32_t to_timestamp(int hour, int min, int sec, int ms) {
+            uint32_t timestamp = 240000'000;
             while(ms   < 0) { --sec ; ms  += 1000; }
             while(sec  < 0) { --min ; sec += 60  ; }
             while(min  < 0) { --hour; min += 60  ; }
@@ -121,8 +121,7 @@ namespace wcc {
         }
 
     private:
-
-        unsigned int data_;
+        uint32_t data_;
 
     };  // class NumericTime
 
@@ -156,7 +155,7 @@ public:
     inline std::string to_string(wcc::NumericTime const& ntime) {
         constexpr int k_max_buffer_len = 12;
         char buffer[k_max_buffer_len];
-        snprintf(buffer, k_max_buffer_len, "%09u", static_cast<unsigned int>(ntime));
+        snprintf(buffer, k_max_buffer_len, "%09u", static_cast<uint32_t>(ntime));
         return buffer;
     }
 }
