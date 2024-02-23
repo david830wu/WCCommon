@@ -86,12 +86,9 @@ inline void config_log(YAML::Node const& cfg) {
 
     auto format_str = cfg["default_format"].as<std::string>();
     auto lvl_str = cfg["default_level"].as<std::string>();
-    auto lvl = lvl_str == "info"   ? spdlog::level::info
-               : lvl_str == "warn" ? spdlog::level::warn
-               : lvl_str == "err"  ? spdlog::level::err
-	       : lvl_str == "debug"? spdlog::level::debug
-               : lvl_str == "critical" ? spdlog::level::critical
-               : throw std::runtime_error("unknown log level");
+    auto lvl = spdlog::level::from_str(lvl_str);
+    if (lvl == spdlog::level::off)
+ 	throw std::runtime_error("unknown log level");
     for (auto [_, logger] : impl::s_logger_table) {
         logger.set_pattern(format_str);
         logger.set_level(lvl);
