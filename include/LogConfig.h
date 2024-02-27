@@ -7,8 +7,9 @@
 #include <regex>
 #include <sstream>
 #include <string_view>
-#include <unistd.h> // for getpid()
+#include <unistd.h>  // for getpid()
 #include <vector>
+#include <charconv> // from_chars
 #include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_sinks.h>
@@ -37,6 +38,18 @@ get_logger(std::string_view logger_name) {
     fmt::print(stderr, "get_logger,MissingLogger,logger={},LogConfig={}\n",
                logger_name, impl::s_logger_config_file);
     throw std::runtime_error(fmt::format("MissingLogger:{}", logger_name));
+}
+
+// Conver string like "1s", "1ms", "1us", "1ns" to duration
+inline std::chrono::system_clock::duration dur_from_chars(std::string_view dur_str) {
+    int dur_int = 0;
+    auto [p, ec] = std::from_chars(dur_str.data(), dur_str.data() + dur_str.size(), dur_int);
+    if (ec != std::errc()) throw std::runtime_error(fmt::format("invalid duration number format,{}", dur_str));
+    if (dur_str.ends_with("ms")) return std::chrono::milliseconds(dur_int);
+    if (dur_str.ends_with("us")) return std::chrono::microseconds(dur_int);
+    if (dur_str.ends_with("ns")) return std::chrono::nanoseconds(dur_int);
+    if (dur_str.ends_with("s"))  return std::chrono::seconds(dur_int);
+    throw std::runtime_error(fmt::format("invalid duration unit,{}", dur_str));
 }
 
 inline void config_log(YAML::Node const& cfg) {
@@ -118,8 +131,9 @@ inline void config_log(YAML::Node const& cfg) {
     for (auto [_, logger] : impl::s_logger_table) {
        logger.flush_on(spdlog::level::warn);
     }
-    
-    spdlog::flush_every(std::chrono::seconds(5));
+   
+    if (cfg["flush_period"])
+        spdlog::flush_every(dur_from_chars(cfg["flush_period"].as<std::string>()));
 
     once = true;
 }
