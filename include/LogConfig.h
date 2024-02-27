@@ -115,7 +115,11 @@ inline void config_log(YAML::Node const& cfg) {
         }
     }
 
-    for (auto [_, logger] : impl::s_logger_table) logger.flush_on(spdlog::level::warn);
+    for (auto [_, logger] : impl::s_logger_table) {
+       logger.flush_on(spdlog::level::warn);
+    }
+    
+    spdlog::flush_every(std::chrono::seconds(5));
 
     once = true;
 }
