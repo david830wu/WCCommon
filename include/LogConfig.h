@@ -131,9 +131,6 @@ inline void config_log(YAML::Node const& cfg) {
     for (auto [_, logger] : impl::s_logger_table) {
        logger.flush_on(spdlog::level::warn);
     }
-   
-    if (cfg["flush_period"])
-        spdlog::flush_every(dur_from_chars(cfg["flush_period"].as<std::string>()));
 
     once = true;
 }
@@ -149,11 +146,11 @@ inline void config_log(YAML::Node const& cfg) {
           sinks:
             - stdout
           loggers:
-            - main 
+            - main
             - TEST
           set_error_loggers:
           set_debug_loggers:
-            - TEST        
+            - TEST
         )");
 #else
     inline void config_log(std::string_view config_file) {
@@ -253,5 +250,27 @@ inline void log_critical(format_string_t<Args...> fmt, Args &&...args) {
 
 inline void log_flush() { get_logger("main")->flush(); }
 
+inline void log_flush_all() {
+    for (auto [_, logger] : impl::s_logger_table) {
+       logger.flush();
+    }
+}
+
+struct LogFlusher {
+    explicit LogFlusher(std::chrono::system_clock::duration dur = std::chrono::seconds(10)) : now_{}, dur_{dur} {}
+
+    void dur(std::chrono::system_clock::duration dur) { dur_ = dur; }
+
+    void flush(std::chrono::system_clock::time_point now) {
+        if (now - now_ > dur_) {
+            now_ = now;
+            wcc::log_flush_all();
+        }
+    }
+
+private:
+    std::chrono::system_clock::time_point now_;
+    std::chrono::system_clock::duration dur_;
+};
 
 } // namespace wcc
