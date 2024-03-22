@@ -78,17 +78,16 @@ inline void config_log(YAML::Node const& cfg) {
 
     std::string log_file = default_log_dir + '/' + default_log_prefix + ".pid." + std::to_string(getpid()) + ".log";
 
-    // create log_dir if not exist
-    std::filesystem::create_directories(default_log_dir);
-
     std::vector<spdlog::sink_ptr> sinks;
     auto sink_table = cfg["sinks"].as<std::vector<std::string>>();
     for (const auto &sink : sink_table) {
         if (sink == "stdout")
             sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
-        if (sink == "basic_file")
-            sinks.push_back(
-                std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file));
+        if (sink == "basic_file") {
+            // create log_dir if not exist
+            std::filesystem::create_directories(default_log_dir);
+            sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file));
+        }
     }
 
     impl::s_logger_table.reserve(cfg["loggers"].size());
