@@ -1,6 +1,6 @@
 set(HDF5_USE_STATIC_LIBRARIES ON)
+find_package(HDF5 REQUIRED)
 
-find_package(HDF5)
 if(HDF5_FOUND)
     message(STATUS "Found Hdf5: create Hdf5::Hdf5 interface target")
     message(STATUS "Hdf5 include: ${HDF5_INCLUDE_DIRS}")

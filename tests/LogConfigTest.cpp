@@ -5,7 +5,7 @@
 
 #include "LogConfig.h"
 #include "WCCommonUtils.h" // for mkdir_if_not_exist
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("WCCommonTest", "[WCCommon]") {
     std::string log_config_file= "LogConfig.yaml";

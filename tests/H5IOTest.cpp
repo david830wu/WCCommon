@@ -8,7 +8,7 @@
 #include <list>
 #include <fmt/format.h>
 #include <unistd.h>
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace wcc;
 

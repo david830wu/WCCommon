@@ -5,7 +5,7 @@
 
 #include "WCCommonUtils.h"
 #include "YAMLGetField.h"
-#include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
     std::string config_file = "YAMLGetFieldTest.yaml";
