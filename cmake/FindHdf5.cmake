@@ -1,4 +1,5 @@
-find_package(HDF5 QUIET)
+set(HDF5_USE_STATIC_LIBRARIES ON)
+find_package(HDF5 REQUIRED)
 
 if(HDF5_FOUND)
     message(STATUS "Found Hdf5: create Hdf5::Hdf5 interface target")

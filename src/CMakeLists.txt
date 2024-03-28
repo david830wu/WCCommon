@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(spdlog REQUIRED)
-find_package(yaml-cpp REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 find_package(date REQUIRED)
 
@@ -31,8 +31,8 @@ target_link_libraries(
     WCCommon
 INTERFACE
     date::date
+    yaml-cpp::yaml-cpp
     fmt::fmt
-    yaml-cpp
     Threads::Threads
 )
 add_library(WCCommon::WCCommon ALIAS WCCommon)
