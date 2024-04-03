@@ -1,5 +1,5 @@
 /* H5IOTest.cpp
-* 
+*
 * Author: Wentao Wu
 */
 
@@ -8,8 +8,6 @@
 #include <list>
 #include <fmt/format.h>
 #include <unistd.h>
-
-//#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 
 using namespace wcc;

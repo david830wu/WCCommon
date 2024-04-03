@@ -1,16 +1,13 @@
 /* NumericTimeTest.cpp
-* 
+*
 * Author: Wentao Wu
 * Created: 20200401
 * Version: 0.1
 */
 
 #include "NumericTime.h"
-
-//#define CATCH_CONFIG_MAIN
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
 #include <catch2/catch_all.hpp>
-
+#include <catch2/benchmark/catch_benchmark_all.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -52,7 +49,7 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
         std::string now_str = now_time.str();
         std::cout << "Now = " << now_str << std::endl;
     }
-    SECTION("Benchmark") {
+    /*SECTION("Benchmark") {
         BENCHMARK("From int") {
             auto ntime = NumericTime(103159010);
         };
@@ -62,5 +59,5 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
         BENCHMARK("From string") {
             auto ntime = NumericTime("10:31:59.010");
         };
-    }
+    }*/
 }

@@ -1,5 +1,5 @@
 /* ProgressBarTest.cpp
-* 
+*
 * Author: Wentao Wu
 */
 
@@ -8,7 +8,6 @@
 #include <chrono>
 #include <thread>
 
-//#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 
 TEST_CASE("ProgressBarTest", "[WCCommon]") {

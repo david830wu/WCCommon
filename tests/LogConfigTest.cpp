@@ -1,13 +1,10 @@
 /* LogConfigTest.cpp
-* 
+*
 * Author: Wentao Wu
 */
 
 #include "LogConfig.h"
 #include "WCCommonUtils.h" // for mkdir_if_not_exist
-        
-
-//#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 
 TEST_CASE("WCCommonTest", "[WCCommon]") {

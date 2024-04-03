@@ -1,5 +1,5 @@
 /* NumericTime.h
- * 
+ *
  * Author: Wentao Wu
 */
 
@@ -17,9 +17,9 @@
 
 namespace wcc {
 
-    // class NumericTime 
+    // class NumericTime
     // NumericTime stores time as uint32_t with millisecond resolution
-    // 
+    //
     class NumericTime {
     public:
         static const NumericTime NaN;
@@ -40,7 +40,7 @@ namespace wcc {
 
         operator uint32_t() const { return data_; }
 
-        std::string str() const { 
+        std::string str() const {
             constexpr int buffer_size = 16;
             char buffer[buffer_size];
             std::memset(buffer, 0, buffer_size);
@@ -49,7 +49,7 @@ namespace wcc {
             } else {
                 std::snprintf(buffer, buffer_size, "%02d:%02d:%02d.%03d", hour(), min(), sec(), ms());
             }
-            return buffer; 
+            return buffer;
         }
         static NumericTime now() {
             auto tp = std::chrono::system_clock::now();
@@ -68,7 +68,7 @@ namespace wcc {
             /*ms   = remains % 1000;*/ remains /= 1000;
             /*sec  = remains % 100 ;*/ remains /= 100 ;
             /*min  = remains % 100 ;*/ remains /= 100 ;
-            hour = remains % 100 ; 
+            hour = remains % 100 ;
             return hour;
         }
         uint32_t min() const noexcept {
@@ -81,12 +81,12 @@ namespace wcc {
         uint32_t sec() const noexcept {
             int remains = data_, sec;
             /*ms   = remains % 1000;*/ remains /= 1000;
-            sec  = remains % 100 ; 
+            sec  = remains % 100 ;
             return sec;
         }
         uint32_t ms() const noexcept {
             int remains = data_, ms;
-            ms   = remains % 1000; 
+            ms   = remains % 1000;
             return ms;
         }
         uint32_t total_ms() const noexcept {
@@ -133,21 +133,21 @@ namespace std {
     template<> class numeric_limits<wcc::NumericTime> {
 public:
     static constexpr bool is_specialized = true;
- 
+
     static constexpr wcc::NumericTime min() noexcept { return wcc::NumericTime(0); }
     static constexpr wcc::NumericTime max() noexcept { return wcc::NumericTime(235959'999); }
     static constexpr wcc::NumericTime lowest() noexcept { return wcc::NumericTime(0); }
- 
+
     static constexpr bool is_signed = false;
     static constexpr bool is_integer = true;
     static constexpr bool is_exact = true;
- 
+
     static constexpr bool has_infinity = true;
     static constexpr bool has_quiet_NaN = true;
     static constexpr bool has_signaling_NaN = false;
     static constexpr wcc::NumericTime infinity() noexcept { return wcc::NumericTime::NaN; }
     static constexpr wcc::NumericTime quiet_NaN() noexcept { return wcc::NumericTime::NaN; }
- 
+
     static constexpr bool is_bounded = true;
     static constexpr bool is_modulo = false;
     };
@@ -168,8 +168,7 @@ struct fmt::formatter<wcc::NumericTime> {
         return it;
     }
 
-    template <typename FmtContext>
-    constexpr auto format(wcc::NumericTime tm, FmtContext& ctx) const {
+    auto format(wcc::NumericTime tm, format_context& ctx) const {
         return fmt::format_to(ctx.out(), "{:02d}:{:02d}:{:02d}.{:03d}", tm.hour(), tm.min(), tm.sec(), tm.ms());
     }
 };

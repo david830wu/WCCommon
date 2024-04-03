@@ -1,5 +1,5 @@
 /* CsvIOTest.cpp
-* 
+*
 * Author: Wentao Wu
 */
 
@@ -7,7 +7,6 @@
 #include <vector>
 #include <fmt/format.h>
 
-//#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 
 using namespace wcc;
@@ -37,13 +36,13 @@ struct DepthField {
 
 #ifdef WCC_USE_CUSTOM_CONVERTER
 namespace wcc {
-    // read 1<<20 Depth tuples: 
+    // read 1<<20 Depth tuples:
     //   - Default    method: 2.061s
     //   - Use custom method: 0.498s
     // leads a 4X faster
     template<>
     const char* string_to_tuple(const char* line, Depth& tuple, char delim) {
-        // line = skip_token(line, delim); 
+        // line = skip_token(line, delim);
         line = read_token(line, &std::get<DepthField::Instrument     >(tuple), delim );
         line = read_token(line, &std::get<DepthField::DepthMarketTime>(tuple), delim );
         line = read_token(line, &std::get<DepthField::Last           >(tuple), delim );
@@ -56,7 +55,7 @@ namespace wcc {
         return line;
     }
 
-    // write 1<<20 Depth tuples: 
+    // write 1<<20 Depth tuples:
     //   - Default    method: 1.859s
     //   - Use custom method: 1.004s
     // leads a 2X faster
@@ -75,9 +74,9 @@ namespace wcc {
         WRITE_TOKEN(std::get<DepthField::Status         >(tuple), delim );
         WRITE_TOKEN(std::get<DepthField::HostTime       >(tuple), '\n'  );
     #undef WRITE_TOKEN
-        if(total_used == size) { 
-            line[0] = '\0'; 
-            return -1; 
+        if(total_used == size) {
+            line[0] = '\0';
+            return -1;
         }
         return total_used;
     }
@@ -89,15 +88,15 @@ static const std::size_t k_len = 1UL<<20;
 void generate_depth(std::vector<Depth>& data) {
     for(std::size_t i = 0; i < k_len; ++i) {
         data.push_back(std::make_tuple(
-            i+1       , // Instrument      
-            133000'000, // DepthMarketTime 
-            7.80      , // Last            
-            7.80      , // AskPrice1       
-            1000      , // AskVol1         
-            7.79      , // BidPrice1       
-            3100      , // BidVol1         
-            'T'       , // Status          
-            NumericTime::now() // HostTime        
+            i+1       , // Instrument
+            133000'000, // DepthMarketTime
+            7.80      , // Last
+            7.80      , // AskPrice1
+            1000      , // AskVol1
+            7.79      , // BidPrice1
+            3100      , // BidVol1
+            'T'       , // Status
+            NumericTime::now() // HostTime
         ));
     }
 }
@@ -123,8 +122,8 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         auto write_s = std::chrono::high_resolution_clock::now();
         write_csv(test_file_name, depths);
         auto write_e = std::chrono::high_resolution_clock::now();
-        fmt::print("Write Cost = {:.3f}s\n", 
-            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(write_e - write_s).count())/1000.0 
+        fmt::print("Write Cost = {:.3f}s\n",
+            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(write_e - write_s).count())/1000.0
         );
     }
     SECTION("read") {
@@ -132,8 +131,8 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         auto read_s = std::chrono::high_resolution_clock::now();
         read_csv(test_file_name, read_depths);
         auto read_e = std::chrono::high_resolution_clock::now();
-        fmt::print("Read Cost = {:.3f}s, Insert {} items\n", 
-            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(read_e - read_s).count())/1000.0 
+        fmt::print("Read Cost = {:.3f}s, Insert {} items\n",
+            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(read_e - read_s).count())/1000.0
             , read_depths.size()
         );
         REQUIRE(read_depths.size() == k_len);
@@ -148,14 +147,14 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
             return std::get<DepthField::Instrument>(depth) > (k_len + 1) / 2;
         });
         auto read_e = std::chrono::high_resolution_clock::now();
-        fmt::print("Read Cost = {:.3f}s, Insert {} items\n", 
-            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(read_e - read_s).count())/1000.0 
+        fmt::print("Read Cost = {:.3f}s, Insert {} items\n",
+            (double)(std::chrono::duration_cast<std::chrono::milliseconds>(read_e - read_s).count())/1000.0
             , read_depths.size()
         );
         REQUIRE(read_depths.size() == (k_len/2) );
     }
     SECTION("read with NaN") {
-        std::string csv_with_nan = 
+        std::string csv_with_nan =
             "1,,7.8000,7.8000,1000,7.7900,3100,T,103850433\n"
             "2,133000000,,7.8000,1000,7.7900,3100,T,103850433\n"
             "3,133000000,7.8000,7.8000,1000,7.7900,3100,,103850433\n"
@@ -172,7 +171,7 @@ TEST_CASE("CsvIOTest", "[WCCommon]") {
         REQUIRE(wcc::isnan(std::get<DepthField::AskVol1        >(read_depths[3])));
     }
     SECTION("write with NaN") {
-        std::string csv_with_nan = 
+        std::string csv_with_nan =
             "1,,7.8000,7.8000,1000,7.7900,3100,T,103850433\n"
             "2,133000000,,7.8000,1000,7.7900,3100,T,103850433\n"
             "3,133000000,7.8000,7.8000,1000,7.7900,3100,,103850433\n"
