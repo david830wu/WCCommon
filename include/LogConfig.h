@@ -255,21 +255,4 @@ inline void log_flush_all() {
     }
 }
 
-struct LogFlusher {
-    explicit LogFlusher(std::chrono::system_clock::duration dur = std::chrono::seconds(10)) : now_{}, dur_{dur} {}
-
-    void dur(std::chrono::system_clock::duration dur) { dur_ = dur; }
-
-    void flush(std::chrono::system_clock::time_point now) {
-        if (now - now_ > dur_) {
-            now_ = now;
-            wcc::log_flush_all();
-        }
-    }
-
-private:
-    std::chrono::system_clock::time_point now_;
-    std::chrono::system_clock::duration dur_;
-};
-
 } // namespace wcc
