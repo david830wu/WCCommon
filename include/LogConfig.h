@@ -13,6 +13,7 @@
 #include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_sinks.h>
+#include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/container/flat_map.hpp>
@@ -27,6 +28,7 @@ struct impl {  // internal stuff; make impl a struct so that static members can 
 
     inline static std::string s_logger_config_file;
     inline static boost::container::flat_map<std::string, spdlog::logger, string_less> s_logger_table;
+    inline static std::ostringstream oss;
 };  // struct impl
 
 inline spdlog::logger*
@@ -52,6 +54,13 @@ inline std::chrono::system_clock::duration dur_from_chars(std::string_view dur_s
     throw std::runtime_error(fmt::format("invalid duration unit,{}", dur_str));
 }
 
+// Note that every get_logger_str call will clear the underlying string
+inline auto get_logger_str() {
+    auto str_view = impl::oss.view();
+    impl::oss.seekp(0);
+    return str_view;
+}
+
 inline void config_log(YAML::Node const& cfg) {
     static bool once = false;
 
@@ -68,15 +77,6 @@ inline void config_log(YAML::Node const& cfg) {
     std::string today_str = today_oss.str();
 
     std::regex today_regex("\\$\\{today\\}");
-    std::string default_log_dir = cfg["default_log_dir"].as<std::string>();
-    default_log_dir =
-        std::regex_replace(default_log_dir, today_regex, today_str);
-    std::string default_log_prefix =
-        cfg["default_log_prefix"].as<std::string>();
-    default_log_prefix =
-        std::regex_replace(default_log_prefix, today_regex, today_str);
-
-    std::string log_file = default_log_dir + '/' + default_log_prefix + ".pid." + std::to_string(getpid()) + ".log";
 
     std::vector<spdlog::sink_ptr> sinks;
     auto sink_table = cfg["sinks"].as<std::vector<std::string>>();
@@ -84,9 +84,16 @@ inline void config_log(YAML::Node const& cfg) {
         if (sink == "stdout")
             sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
         if (sink == "basic_file") {
-            // create log_dir if not exist
-            std::filesystem::create_directories(default_log_dir);
+            std::string default_log_dir = cfg["default_log_dir"].as<std::string>();
+            default_log_dir = std::regex_replace(default_log_dir, today_regex, today_str);
+            std::string default_log_prefix = cfg["default_log_prefix"].as<std::string>();
+            default_log_prefix = std::regex_replace(default_log_prefix, today_regex, today_str);
+            std::string log_file = default_log_dir + '/' + default_log_prefix + ".pid." + std::to_string(getpid()) + ".log";
+            std::filesystem::create_directories(default_log_dir);  // create log_dir if not exist
             sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file));
+        }
+        if (sink == "string") {
+            sinks.push_back(std::make_shared<spdlog::sinks::ostream_sink_mt>(impl::oss));
         }
     }
 
@@ -135,26 +142,22 @@ inline void config_log(YAML::Node const& cfg) {
 }
 
 #if defined(TEST)
-    inline void config_log() {
-        impl::s_logger_config_file = "TEST";
-        YAML::Node cfg = YAML::Load(R"(
-          default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
-          default_level     : "info"
-          default_log_dir   : "./log"
-          default_log_prefix: "TEST"
-          sinks:
-            - stdout
-          loggers:
-            - main
-            - TEST
-          set_error_loggers:
-          set_debug_loggers:
-            - TEST
-        )");
+inline void config_log() {
+    impl::s_logger_config_file = "TEST";
+    YAML::Node cfg = YAML::Load(R"(
+        default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
+        default_level     : "info"
+        sinks:
+        - stdout
+        loggers:
+        - main
+        set_error_loggers:
+        set_debug_loggers:
+    )");
 #else
-    inline void config_log(std::string_view config_file) {
-        impl::s_logger_config_file = config_file;
-        YAML::Node cfg = YAML::LoadFile(impl::s_logger_config_file);
+inline void config_log(std::string_view config_file) {
+    impl::s_logger_config_file = config_file;
+    YAML::Node cfg = YAML::LoadFile(impl::s_logger_config_file);
 #endif
     config_log(cfg);
 }
@@ -173,7 +176,7 @@ using format_string_t = spdlog::format_string_t<Args...>;
 template <StringLiteral STR> class AttachLogger {
 public:
 #if defined(TEST)
-    AttachLogger() : p_logger_(get_logger("TEST")) {}
+    AttachLogger() : p_logger_(get_logger("main")) {}
 #else
     AttachLogger() : p_logger_(get_logger(STR.value)) {}
 #endif
