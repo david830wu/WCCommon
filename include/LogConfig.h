@@ -1,15 +1,14 @@
 #pragma once
 
+#include <unistd.h>  // for getpid()
 #include <ctime>
 #include <filesystem>
-#include <iomanip>
-#include <iostream>
 #include <regex>
 #include <sstream>
 #include <string_view>
-#include <unistd.h>  // for getpid()
 #include <vector>
 #include <charconv> // from_chars
+#include <source_location>
 #include <fmt/format.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_sinks.h>
@@ -17,6 +16,16 @@
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/container/flat_map.hpp>
+#include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor/variadic.hpp>
+#include <boost/preprocessor/seq/seq.hpp>
+#include <boost/preprocessor/seq/transform.hpp>
+#include <boost/preprocessor/seq/enum.hpp>
+#include <boost/preprocessor/tuple/elem.hpp>
+#include <boost/preprocessor/control/if.hpp>
+#include <boost/preprocessor/seq/fold_left.hpp>
+#include <boost/preprocessor/facilities/empty.hpp>
+#include <boost/preprocessor/comparison/equal.hpp>
 
 namespace wcc {
 
@@ -31,8 +40,7 @@ struct impl {  // internal stuff; make impl a struct so that static members can 
     inline static std::ostringstream oss;
 };  // struct impl
 
-inline spdlog::logger*
-get_logger(std::string_view logger_name) {
+inline spdlog::logger* get_logger(std::string_view logger_name) {
     auto iter = impl::s_logger_table.find(logger_name);
     if (iter != impl::s_logger_table.end()) [[likely]]
         return &(iter->second);
@@ -65,8 +73,7 @@ inline void config_log(YAML::Node const& cfg) {
     static bool once = false;
 
     if (once) {
-        std::cerr << "loggers has been created before from "
-                  << impl::s_logger_config_file << std::endl;
+        fmt::print("loggers has been created before from {}\n", impl::s_logger_config_file);
         return;
     }
 
@@ -258,4 +265,98 @@ inline void log_flush_all() {
     }
 }
 
+
+/**
+ * get_source_function_name: used by macros following
+*/
+inline constexpr auto get_source_function_name(std::source_location loc) {
+    auto name = std::string_view(loc.function_name());
+    auto e = name.find_first_of('(');
+    auto b = name.find_last_of(':', e);  // for ::
+    if (b == std::string_view::npos) b = name.find_first_of(' ');
+    return std::string_view(name.begin()+b+1, name.begin()+e);
+}
+
+/**
+ * is_method: check if current inside a nonstatic method or not; not used so far
+*/
+inline constexpr auto is_inside_method(std::source_location loc) {
+    auto name = std::string_view(loc.function_name());
+    // Not a pattern of static R class::foo() or R foo()
+    return name.find("static ") == name.npos && name.find("::") != name.npos;
+}
+
+namespace internal {  // Used by macros following
+    // T must be a pointer (since it is used as has_id<this> for now)
+    template <typename T, typename = void> struct has_id : std::false_type {};
+    template <typename T> struct has_id<T, std::void_t<decltype((*std::declval<T>()).id())>> : std::true_type {};
+    template <typename T>
+    auto id(const T* t) {
+        if constexpr (has_id<const T*>::value) return t->id();
+        else return 0; // doesn't matter what returns (both type and value) here since it will be discarded by compiler
+    }
+
+} // namespace internal
+
 } // namespace wcc
+
+
+#define FORMAT_STR_FROM_TUPLE(s,i,tuple) \
+    BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(tuple),2), BOOST_PP_TUPLE_ELEM(0,tuple), "{}")
+#define VAR_FROM_TUPLE(s,i,tuple) \
+    BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(tuple),2), BOOST_PP_TUPLE_ELEM(1,tuple), BOOST_PP_TUPLE_ELEM(0,tuple))
+
+#define JUXTAPOSE(s, state, x) BOOST_PP_IF(BOOST_PP_EQUAL(s,1), x, state "," x)
+
+#define COLLECT_FORMAT_STR(...) \
+      BOOST_PP_SEQ_FOLD_LEFT(JUXTAPOSE, 0,BOOST_PP_SEQ_TRANSFORM(FORMAT_STR_FROM_TUPLE, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
+
+#define COLLECT_VAR(...) \
+      , BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(VAR_FROM_TUPLE, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
+
+// HJ_LOG used inside a class attcheded with a logger (via AttachLogger<"logname">).
+// For classes involving Trader (e.g., Trader, TraderCallback, AlgoApi, AlgoBase, and specific algo classes)
+// it will print out Trader Id automatically, otherwise, empty (a blank space).
+// Format:
+//   [function name] [event name] [trader id] {information}
+
+#define HJ_THIS(is_method)   BOOST_PP_IF(is_method, this->, wcc::)
+#define HJ_HAS_ID(is_method) BOOST_PP_IF(is_method, wcc::internal::has_id<decltype(this)>::value, false)
+#define HJ_ID(is_method)     BOOST_PP_IF(is_method, wcc::internal::id(this), '-') // the '-' actually no use, just make grammar happy in HJ_TLOG
+
+#define HJ_LOG(is_method, level, event, ...) {                                                            \
+    constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
+    HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] {{"                                            \
+        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
+        "}}", fun_name, event                                                                             \
+        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
+}
+
+#define HJ_TLOG(is_method, level, event, ...) {                                                           \
+    constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
+    if constexpr (HJ_HAS_ID(is_method)) {                                                                 \
+        HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [{}] {{"                                   \
+        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
+        "}}", fun_name, event, HJ_ID(is_method)                                                            \
+        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
+    } else {                                                                                              \
+        HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [-] {{"                                    \
+        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
+        "}}", fun_name, event                                                                             \
+        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
+    }                                                                                                     \
+}
+
+#define VAR_1(a)      (BOOST_PP_STRINGIZE(a)":{}", a)
+#define VAR_2(fmt, a) (BOOST_PP_STRINGIZE(a)":{:" fmt "}", a)
+#define VAR(...)      BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__),1), VAR_1, VAR_2)(__VA_ARGS__)
+
+/* EXAMPLES:
+HJ_LOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
+HJ_LOG(1, debug, event);
+HJ_LOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
+
+HJ_TLOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
+HJ_TLOG(1, debug, event);
+HJ_TLOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
+*/
