@@ -1,16 +1,14 @@
 /* YAMLGetFieldTest.cpp
-* 
+*
 * Author: Wentao Wu
 */
 
 #include "WCCommonUtils.h"
 #include "YAMLGetField.h"
-
-#define CATCH_CONFIG_MAIN
-#include "catch2/catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("YAMLGetFieldTest", "[WCCommon]") {
-    std::string config_file = "tests/YAMLGetFieldTest.yaml";
+    std::string config_file = "YAMLGetFieldTest.yaml";
     SECTION("YAMLGetField") {
         wcc::check_file_exist(config_file);
         std::string today_str { wcc::get_today_str() };

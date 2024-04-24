@@ -10,13 +10,10 @@ if(POLICY CMP0076)
   cmake_policy(SET CMP0076 NEW)
 endif()
 
-# enable c++17 globally
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 find_package(spdlog REQUIRED)
-find_package(yaml-cpp REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 find_package(date REQUIRED)
 
@@ -31,36 +28,34 @@ target_link_libraries(
     WCCommon
 INTERFACE
     date::date
+    yaml-cpp::yaml-cpp
     fmt::fmt
-    yaml-cpp
     Threads::Threads
 )
 add_library(WCCommon::WCCommon ALIAS WCCommon)
 
-add_library(LogConfig)
-target_sources(
-    LogConfig
-PRIVATE
-    LogConfig.cpp
-)
+add_library(LogConfig INTERFACE)
 target_include_directories(
     LogConfig
-PUBLIC
+INTERFACE
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+target_compile_definitions(
+    LogConfig
+INTERFACE
+    SPDLOG_FMT_EXTERNAL_HO
+)
 target_link_libraries(
     LogConfig
-PUBLIC
-    spdlog::spdlog
-PRIVATE
-    WCCommon::WCCommon
+INTERFACE
+    spdlog::spdlog_header_only
 )
 add_library(LogConfig::LogConfig ALIAS LogConfig)
 
 
 #================================================
-# Install 
+# Install
 #================================================
 install(TARGETS WCCommon LogConfig
     EXPORT WCCommonTargets
