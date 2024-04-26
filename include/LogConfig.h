@@ -37,7 +37,7 @@ struct impl {  // make impl a struct so that static members can be inlined and l
         bool operator()(std::string_view sv1, std::string_view sv2) const { return sv1 < sv2; }
     };
 
-    inline static std::string s_logger_config_file;
+    inline static std::string s_logger_config_file = "config node";
     inline static boost::container::flat_map<std::string, spdlog::logger, string_less> s_loggers;
     inline static std::ostringstream s_oss;
 };  // struct impl
@@ -162,28 +162,13 @@ inline void config_log(YAML::Node const& cfg) {
     once = true;
 }
 
-#if defined(TEST)
-inline void config_log() {
-    internal::impl::s_logger_config_file = "TEST";
-    YAML::Node cfg = YAML::Load(R"(
-        default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
-        default_level     : "info"
-        sinks:
-        - stdout
-        loggers:
-        - main
-        set_error_loggers:
-        set_debug_loggers:
-    )");
-#else
 inline void config_log(std::string_view config_file) {
     internal::impl::s_logger_config_file = config_file;
     YAML::Node cfg = YAML::LoadFile(internal::impl::s_logger_config_file);
-#endif
     config_log(cfg);
 }
 
-// Following need c++20
+// Following needs c++20
 template <size_t N> struct StringLiteral {
     constexpr StringLiteral(const char (&str)[N]) {
         std::copy_n(str, N, value);
@@ -196,11 +181,7 @@ using format_string_t = spdlog::format_string_t<Args...>;
 
 template <StringLiteral STR> class AttachLogger {
 public:
-#if defined(TEST)
-    AttachLogger() : p_logger_(get_logger("main")) {}
-#else
     AttachLogger() : p_logger_(get_logger(STR.value)) {}
-#endif
 
     template <typename... Args>
     void log_trace(format_string_t<Args...> fmt, Args &&...args) const {
@@ -316,11 +297,13 @@ inline constexpr auto is_inside_method(std::source_location loc) {
 #define COLLECT_VAR(...) \
       , BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(VAR_FROM_TUPLE, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
 
-// HJ_LOG used inside a class attcheded with a logger (via AttachLogger<"logname">).
+// HJ_LOG | HJ_TLOG used inside a class attcheded with a logger (via AttachLogger<"logname">).
 // For classes involving Trader (e.g., Trader, TraderCallback, AlgoApi, AlgoBase, and specific algo classes)
-// it will print out Trader Id automatically, otherwise, empty (a blank space).
-// Format:
+// use HJ_TLOG as that will print out Trader Id automatically (or - if there's no id).
+// Format of HJ_LOG:
 //   [function name] [event name] [trader id] {information}
+// Format of HJ_TLOG:
+//   [function name] [event name] {information}
 
 #define HJ_THIS(is_method)   BOOST_PP_IF(is_method, this->, wcc::)
 #define HJ_HAS_ID(is_method) BOOST_PP_IF(is_method, wcc::internal::has_id<decltype(this)>::value, false)
@@ -349,7 +332,7 @@ inline constexpr auto is_inside_method(std::source_location loc) {
     if constexpr (HJ_HAS_ID(is_method)) {                                                                 \
         HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [{}] {{"                                   \
         BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
-        "}}", fun_name, event, HJ_ID(is_method)                                                            \
+        "}}", fun_name, event, HJ_ID(is_method)                                                           \
         BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
     } else {                                                                                              \
         HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [-] {{"                                    \
