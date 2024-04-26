@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+#include <list>
+
 namespace wcc {
 
 template <typename T> class delegate_base;

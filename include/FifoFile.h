@@ -1,13 +1,20 @@
 #pragma once
 
+#include <fcntl.h>     // O_RDONLY O_NONBLOCK
+#include <filesystem>
+#include <stdexcept>
 #include <string>
+#include <string.h>    // strerror
 #include <sys/stat.h>  // S_IRUSR etc
 #include <sys/types.h> // mode_t etc
 #include <unistd.h>    // open
 
+namespace wcc {
+
 class FifoFile {
   public:
-    template <typename Str> FifoFile(const Str &fn) : fn_{fn} {
+    template <typename Str> 
+    FifoFile(const Str &fn) : fn_{fn} {
         if (!std::filesystem::exists(fn_)) {
             constexpr auto mode = mode_t(S_IRUSR | S_IWUSR | S_IRGRP);
             if (mkfifo(fn_.c_str(), mode) < 0) {
@@ -40,3 +47,5 @@ class FifoFile {
     std::string fn_;
     int fd_;
 };
+
+} // namespace wcc

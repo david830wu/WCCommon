@@ -1,4 +1,4 @@
-/* L2XTraderVersion.h
+/* WCCommonVersion.h
  *
  * Author: Wentao Wu
 */
