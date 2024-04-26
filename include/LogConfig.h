@@ -378,12 +378,3 @@ inline constexpr auto is_inside_method(std::source_location loc) {
 #define VAR_2(fmt, a) (BOOST_PP_STRINGIZE(a)":{:" fmt "}", a)
 #define VAR(...)      BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__),1), VAR_1, VAR_2)(__VA_ARGS__)
 
-/* EXAMPLES:
-HJ_LOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
-HJ_LOG(1, debug, event);
-HJ_LOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
-
-HJ_TLOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
-HJ_TLOG(1, debug, event);
-HJ_TLOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
-*/

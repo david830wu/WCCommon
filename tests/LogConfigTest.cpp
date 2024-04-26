@@ -25,4 +25,13 @@ TEST_CASE("WCCommonTest", "[WCCommon]") {
         p_logger->error("{:06d} is SZ stock", 5);
         p_logger->critical("{} is not a {}", "cat", "fruit");
     }
+    SECTION("macro-loggger") {
+        HJ_LOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
+        HJ_LOG(1, debug, event);
+        HJ_LOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
+        
+        HJ_TLOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
+        HJ_TLOG(1, debug, event);
+        HJ_TLOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
+    }
 }
