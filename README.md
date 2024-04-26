@@ -153,6 +153,11 @@ int main() {
 }
 ```
 
+And can be used with predefined macros
+```cpp
+code goes here
+```
+
 
 ### NumericTime
 
@@ -283,6 +288,22 @@ namespace wcc {
     // create and management *nix FIFO
     class FIFOInfo;
 }
+```
+
+### DefEnum
+
+DefEnum is ???
+
+```cpp
+code goes here
+```
+
+### DefTuple
+
+DefTuple is ???
+
+```cpp
+code goes here
 ```
 
 
