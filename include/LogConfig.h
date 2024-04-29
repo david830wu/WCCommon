@@ -297,7 +297,7 @@ inline constexpr auto is_inside_method(std::source_location loc) {
 #define COLLECT_VAR(...) \
       , BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(VAR_FROM_TUPLE, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
 
-// HJ_LOG | HJ_TLOG used inside a class attcheded with a logger (via AttachLogger<"logname">).
+// HJ_LOG | HJ_TLOG is used inside a class which is attached a logger (via AttachLogger<"logname">).
 // For classes involving Trader (e.g., Trader, TraderCallback, AlgoApi, AlgoBase, and specific algo classes)
 // use HJ_TLOG as that will print out Trader Id automatically (or - if there's no id).
 // Format of HJ_LOG:
@@ -325,7 +325,7 @@ inline constexpr auto is_inside_method(std::source_location loc) {
  * HJ_TLOG formatted ouput with given level, event, and format-value pairs, using logger
  * of the current class attached (is_method == 1), or the "main" logger (is_method == 0),
  * plus trader id infomation as [tid] if current class has an id() method, or [-] if not.
- * Note that is_method == 0 means no id() avaiable (since there's event no class/object).
+ * Note that is_method == 0 means no id() available (since there's event no class/object).
  */
 #define HJ_TLOG(is_method, level, event, ...) {                                                           \
     constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \

@@ -24,7 +24,7 @@ When MyApp is build with WCCommon, add dependent targets in CMakeLists.txt
 ```
 find_package(WCCommon)
 add_executable(MyApp)
-target_sources(MyApp RPIVATE main.cpp)
+target_sources(MyApp PRIVATE main.cpp)
 target_link_libraries(MyApp PRIVATE WCCommon::WCCommon WCCommon::LogConfig)
 ```
 
@@ -155,7 +155,29 @@ int main() {
 
 And can be used with predefined macros
 ```cpp
-code goes here
+// Struct with an attached logger named "Test"
+struct Logged : wcc::AttachLogger<"Test"> {
+   Logged() {
+       // Normal usage:
+       // Since we are running inside Catch2 internal functions, which cannot
+       // be detected by our macro as HAS_ID, the id is output as [-].
+       // However, we have defined the id() method for this class.
+       ID_MLOG(info, "init", ("Logged constructor called!"));
+   }
+
+   void run() {
+       // For a variable. All these output without an id field (since using HJ_LOG)
+       int x = 1;
+       MLOG(info,  "event", VAR(x));           // default format: "x:{}"
+       MLOG(error, "event", ("x:{:06}", x));  // specify a format fully
+
+       // Multiple format/value pairs allowed
+       // This one also outputs an id field as [1] since we have the id() method for this class
+       ID_MLOG(info, "with_id", VAR(x), ("msg:{}", "hello"), ("pi:{}", 3.14));
+   }
+
+   auto id() const { return 8; }
+};
 ```
 
 
