@@ -141,6 +141,8 @@ set_debug_loggers:
 
 And loggers are created and configured as
 ```cpp
+#include "LogConfig.h"
+
 int main() {
     wcc::config_log("LogConfig.yaml");
     auto p_logger = wcc::get_logger("main");
@@ -153,8 +155,10 @@ int main() {
 }
 ```
 
-And can be used with predefined macros
+And log with HJ format can be used with predefined macros
 ```cpp
+#include "HJLogFormat.h"
+
 // Struct with an attached logger named "Test"
 struct Logged : wcc::AttachLogger<"Test"> {
    Logged() {
