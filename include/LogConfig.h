@@ -16,16 +16,6 @@
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/container/flat_map.hpp>
-#include <boost/preprocessor/stringize.hpp>
-#include <boost/preprocessor/variadic.hpp>
-#include <boost/preprocessor/seq/seq.hpp>
-#include <boost/preprocessor/seq/transform.hpp>
-#include <boost/preprocessor/seq/enum.hpp>
-#include <boost/preprocessor/tuple/elem.hpp>
-#include <boost/preprocessor/control/if.hpp>
-#include <boost/preprocessor/seq/fold_left.hpp>
-#include <boost/preprocessor/facilities/empty.hpp>
-#include <boost/preprocessor/comparison/equal.hpp>
 
 namespace wcc {
 

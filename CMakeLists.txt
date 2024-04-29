@@ -24,6 +24,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # find and configure required package
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+find_package(Boost QUIET)
 
 include(${CMAKE_SOURCE_DIR}/cmake/FindHdf5.cmake)
 
