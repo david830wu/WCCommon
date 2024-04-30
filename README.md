@@ -24,7 +24,7 @@ When MyApp is build with WCCommon, add dependent targets in CMakeLists.txt
 ```
 find_package(WCCommon)
 add_executable(MyApp)
-target_sources(MyApp RPIVATE main.cpp)
+target_sources(MyApp PRIVATE main.cpp)
 target_link_libraries(MyApp PRIVATE WCCommon::WCCommon WCCommon::LogConfig)
 ```
 
@@ -141,6 +141,8 @@ set_debug_loggers:
 
 And loggers are created and configured as
 ```cpp
+#include "LogConfig.h"
+
 int main() {
     wcc::config_log("LogConfig.yaml");
     auto p_logger = wcc::get_logger("main");
@@ -151,6 +153,35 @@ int main() {
     p_logger->critical("{} is not a {}", "cat", "fruit");
     return 0;
 }
+```
+
+And log with HJ format can be used with predefined macros
+```cpp
+#include "HJLogFormat.h"
+
+// Struct with an attached logger named "Test"
+struct Logged : wcc::AttachLogger<"Test"> {
+   Logged() {
+       // Normal usage:
+       // Since we are running inside Catch2 internal functions, which cannot
+       // be detected by our macro as HAS_ID, the id is output as [-].
+       // However, we have defined the id() method for this class.
+       ID_MLOG(info, "init", ("Logged constructor called!"));
+   }
+
+   void run() {
+       // For a variable. All these output without an id field (since using HJ_LOG)
+       int x = 1;
+       MLOG(info,  "event", VAR(x));           // default format: "x:{}"
+       MLOG(error, "event", ("x:{:06}", x));  // specify a format fully
+
+       // Multiple format/value pairs allowed
+       // This one also outputs an id field as [1] since we have the id() method for this class
+       ID_MLOG(info, "with_id", VAR(x), ("msg:{}", "hello"), ("pi:{}", 3.14));
+   }
+
+   auto id() const { return 8; }
+};
 ```
 
 
@@ -283,6 +314,89 @@ namespace wcc {
     // create and management *nix FIFO
     class FIFOInfo;
 }
+```
+
+### DefEnum
+
+DefEnum is a macro to define enum with reflection easily.
+
+```cpp
+namespace test {
+// A test example here
+DEF_ENUM(logout_reason_t, uint8_t,
+    (user_initiated_logout,   1)
+    (system_initiated_logout)   // this will be 2
+    (heartbeat_failure,       101)
+)
+}  // namespace test
+
+TEST_CASE("enum values", "[DEF_ENUM]") {
+    REQUIRE(uint8_t(test::logout_reason_t::user_initiated_logout) == 1);
+    REQUIRE(uint8_t(test::logout_reason_t::system_initiated_logout) == 2);
+    REQUIRE(uint8_t(test::logout_reason_t::heartbeat_failure) == 101);
+}
+
+TEST_CASE("enum strings", "[DEF_ENUM]") {
+    REQUIRE(stringize(test::logout_reason_t::user_initiated_logout) == "user_initiated_logout");
+    REQUIRE(stringize(test::logout_reason_t::system_initiated_logout) == "system_initiated_logout");
+    REQUIRE(stringize(test::logout_reason_t::heartbeat_failure) == "heartbeat_failure");
+}
+```
+
+### DefTuple
+
+DefEnum is a macro to define std::tuple with reflection easily.
+
+```cpp
+namespace test {
+DEF_TUPLE(
+    Transaction,
+    (int, SeqNo)         // unique in one channel
+    (double, Price, 6)   // Price1, Price2, ..., Price5
+    (int, Volume, 6),    // Volume1, Volume2, ..., Volume5
+    trans_field_names
+)
+}  // namespace test
+
+TEST_CASE("Usages", "[DEF_TUPLE]") {
+	test::Transaction t{};  // all zeros
+
+	REQUIRE(test::stringize(t) ==  // everything's zero
+        "SeqNo:0, "
+        "Price1:0, Price2:0, Price3:0,Price4:0, Price5:0, " 
+        "Volume1:0, Volume2:0, Volume3:0, Volume4:0, Volume5:0");
+
+    std::get<test::TransactionField::SeqNo>(t) = 1;
+    std::get<test::TransactionField::Price1>(t) = 10000;
+    std::get<test::TransactionField::Price2>(t) = 20000;
+    std::get<test::TransactionField::Price3>(t) = 30000;
+    std::get<test::TransactionField::Price4>(t) = 40000;
+    std::get<test::TransactionField::Price5>(t) = 50000;
+    std::get<test::TransactionField::Volume1>(t) = 101;
+    std::get<test::TransactionField::Volume2>(t) = 201;
+    std::get<test::TransactionField::Volume3>(t) = 301;
+    std::get<test::TransactionField::Volume4>(t) = 401;
+    std::get<test::TransactionField::Volume5>(t) = 501;
+
+    REQUIRE(test::stringize(t) ==
+        "SeqNo:1, "
+        "Price1:10000, Price2:20000, Price3:30000, Price4:40000, Price5:50000, "
+        "Volume1:101, Volume2:201, Volume3:301, Volume4:401, Volume5:501");
+
+    auto const& names = test::trans_field_names(); // names is a ref to a invisible static global vector
+    REQUIRE(names[0]  == "SeqNo");
+    REQUIRE(names[1]  == "Price1");
+    REQUIRE(names[2]  == "Price2");
+    REQUIRE(names[3]  == "Price3");
+    REQUIRE(names[4]  == "Price4");
+    REQUIRE(names[5]  == "Price5");
+    REQUIRE(names[6]  == "Volume1");
+    REQUIRE(names[7]  == "Volume2");
+    REQUIRE(names[8]  == "Volume3");
+    REQUIRE(names[9]  == "Volume4");
+    REQUIRE(names[10] == "Volume5");
+}
+
 ```
 
 

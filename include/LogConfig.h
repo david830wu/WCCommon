@@ -16,16 +16,6 @@
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/container/flat_map.hpp>
-#include <boost/preprocessor/stringize.hpp>
-#include <boost/preprocessor/variadic.hpp>
-#include <boost/preprocessor/seq/seq.hpp>
-#include <boost/preprocessor/seq/transform.hpp>
-#include <boost/preprocessor/seq/enum.hpp>
-#include <boost/preprocessor/tuple/elem.hpp>
-#include <boost/preprocessor/control/if.hpp>
-#include <boost/preprocessor/seq/fold_left.hpp>
-#include <boost/preprocessor/facilities/empty.hpp>
-#include <boost/preprocessor/comparison/equal.hpp>
 
 namespace wcc {
 
@@ -37,7 +27,7 @@ struct impl {  // make impl a struct so that static members can be inlined and l
         bool operator()(std::string_view sv1, std::string_view sv2) const { return sv1 < sv2; }
     };
 
-    inline static std::string s_logger_config_file;
+    inline static std::string s_logger_config_file = "config node";
     inline static boost::container::flat_map<std::string, spdlog::logger, string_less> s_loggers;
     inline static std::ostringstream s_oss;
 };  // struct impl
@@ -64,7 +54,7 @@ inline spdlog::logger* get_logger(std::string_view logger_name) {
     throw std::runtime_error(fmt::format("MissingLogger:{}", logger_name));
 }
 
-// Conver string like "1s", "1ms", "1us", "1ns" to duration
+// Convert string like "1s", "1ms", "1us", "1ns" to duration
 inline std::chrono::system_clock::duration dur_from_chars(std::string_view dur_str) {
     int dur_int = 0;
     auto [p, ec] = std::from_chars(dur_str.data(), dur_str.data() + dur_str.size(), dur_int);
@@ -162,28 +152,13 @@ inline void config_log(YAML::Node const& cfg) {
     once = true;
 }
 
-#if defined(TEST)
-inline void config_log() {
-    internal::impl::s_logger_config_file = "TEST";
-    YAML::Node cfg = YAML::Load(R"(
-        default_format    : "[%m-%d %H:%M:%S.%f] [%-8l] [%-12n] %v"
-        default_level     : "info"
-        sinks:
-        - stdout
-        loggers:
-        - main
-        set_error_loggers:
-        set_debug_loggers:
-    )");
-#else
 inline void config_log(std::string_view config_file) {
     internal::impl::s_logger_config_file = config_file;
     YAML::Node cfg = YAML::LoadFile(internal::impl::s_logger_config_file);
-#endif
     config_log(cfg);
 }
 
-// Following need c++20
+// Following needs c++20
 template <size_t N> struct StringLiteral {
     constexpr StringLiteral(const char (&str)[N]) {
         std::copy_n(str, N, value);
@@ -196,11 +171,7 @@ using format_string_t = spdlog::format_string_t<Args...>;
 
 template <StringLiteral STR> class AttachLogger {
 public:
-#if defined(TEST)
-    AttachLogger() : p_logger_(get_logger("main")) {}
-#else
     AttachLogger() : p_logger_(get_logger(STR.value)) {}
-#endif
 
     template <typename... Args>
     void log_trace(format_string_t<Args...> fmt, Args &&...args) const {
@@ -279,10 +250,7 @@ inline void log_flush_all() {
     }
 }
 
-
-/**
- * get_source_function_name: used by macros following
-*/
+// get_source_function_name: used by macros following
 inline constexpr auto get_source_function_name(std::source_location loc) {
     auto name = std::string_view(loc.function_name());
     auto e = name.find_first_of('(');
@@ -291,9 +259,7 @@ inline constexpr auto get_source_function_name(std::source_location loc) {
     return std::string_view(name.begin()+b+1, name.begin()+e);
 }
 
-/**
- * is_method: check if current inside a nonstatic method or not; not used so far
-*/
+// is_method: check if current inside a non-static method or not; not used so far
 inline constexpr auto is_inside_method(std::source_location loc) {
     auto name = std::string_view(loc.function_name());
     // Not a pattern of static R class::foo() or R foo()
@@ -301,89 +267,3 @@ inline constexpr auto is_inside_method(std::source_location loc) {
 }
 
 } // namespace wcc
-
-
-#define FORMAT_STR_FROM_TUPLE(s,i,tuple) \
-    BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(tuple),2), BOOST_PP_TUPLE_ELEM(0,tuple), "{}")
-#define VAR_FROM_TUPLE(s,i,tuple) \
-    BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_TUPLE_SIZE(tuple),2), BOOST_PP_TUPLE_ELEM(1,tuple), BOOST_PP_TUPLE_ELEM(0,tuple))
-
-#define JUXTAPOSE(s, state, x) BOOST_PP_IF(BOOST_PP_EQUAL(s,1), x, state "," x)
-
-#define COLLECT_FORMAT_STR(...) \
-      BOOST_PP_SEQ_FOLD_LEFT(JUXTAPOSE, 0,BOOST_PP_SEQ_TRANSFORM(FORMAT_STR_FROM_TUPLE, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
-
-#define COLLECT_VAR(...) \
-      , BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(VAR_FROM_TUPLE, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
-
-// HJ_LOG used inside a class attcheded with a logger (via AttachLogger<"logname">).
-// For classes involving Trader (e.g., Trader, TraderCallback, AlgoApi, AlgoBase, and specific algo classes)
-// it will print out Trader Id automatically, otherwise, empty (a blank space).
-// Format:
-//   [function name] [event name] [trader id] {information}
-
-#define HJ_THIS(is_method)   BOOST_PP_IF(is_method, this->, wcc::)
-#define HJ_HAS_ID(is_method) BOOST_PP_IF(is_method, wcc::internal::has_id<decltype(this)>::value, false)
-#define HJ_ID(is_method)     BOOST_PP_IF(is_method, wcc::internal::id(this), '-') // the '-' actually no use, just make grammar happy in HJ_TLOG
-
-/**
- * HJ_LOG formatted ouput with given level, event, and format-value pairs, using logger
- * of the current class attached (is_method == 1), or the "main" logger (is_method == 0).
- */
-#define HJ_LOG(is_method, level, event, ...) {                                                            \
-    constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
-    HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] {{"                                            \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
-        "}}", fun_name, event                                                                             \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
-}
-
-/**
- * HJ_TLOG formatted ouput with given level, event, and format-value pairs, using logger
- * of the current class attached (is_method == 1), or the "main" logger (is_method == 0),
- * plus trader id infomation as [tid] if current class has an id() method, or [-] if not.
- * Note that is_method == 0 means no id() avaiable (since there's event no class/object).
- */
-#define HJ_TLOG(is_method, level, event, ...) {                                                           \
-    constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
-    if constexpr (HJ_HAS_ID(is_method)) {                                                                 \
-        HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [{}] {{"                                   \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
-        "}}", fun_name, event, HJ_ID(is_method)                                                            \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
-    } else {                                                                                              \
-        HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [-] {{"                                    \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
-        "}}", fun_name, event                                                                             \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
-    }                                                                                                     \
-}
-
-/**
- * HJ_LOG_ID formatted ouput with given level, event, and format-value pairs, using logger
- * of the current class attached (is_method == 1), or the "main" logger (is_method == 0),
- * plus id infomation (output as [id]) given as 4th macro parameter.
- *
- * Used in cases that id can not be obtained as this->id() call but id does exist and need to be output.
- */
-#define HJ_LOG_ID(is_method, level, event, id, ...) {                                                     \
-    constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
-    HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [{}] {{"                                       \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
-        "}}", fun_name, event, id                                                                         \
-        BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
-}
-
-#define VAR_1(a)      (BOOST_PP_STRINGIZE(a)":{}", a)
-#define VAR_2(fmt, a) (BOOST_PP_STRINGIZE(a)":{:" fmt "}", a)
-#define VAR(...)      BOOST_PP_IF(BOOST_PP_EQUAL(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__),1), VAR_1, VAR_2)(__VA_ARGS__)
-
-/* EXAMPLES:
-HJ_LOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
-HJ_LOG(1, debug, event);
-HJ_LOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
-
-HJ_TLOG(1, info, event, ("{:3d}", 5), (f(x)), ("hello"), ("{:.10s}","pliu"));
-HJ_TLOG(1, debug, event);
-HJ_TLOG(0, debug, event, VAR(price), VAR(vol));  // VAR(x) expand to ("x={}", x)
-*/
