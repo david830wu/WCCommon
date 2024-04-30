@@ -41,7 +41,7 @@ if ("CsvIOTest" IN_LIST target_tests)
     add_test("${test_name}" ${test_name})
 endif()
 
-if ("H5IOTest" IN_LIST target_tests)
+if (HDF5_FOUND AND "H5IOTest" IN_LIST target_tests)
     set(test_name "H5IOTest")
     add_executable(${test_name})
     target_sources(${test_name} PUBLIC H5IOTest.cpp)

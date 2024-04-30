@@ -1,5 +1,5 @@
 set(HDF5_USE_STATIC_LIBRARIES ON)
-find_package(HDF5 REQUIRED)
+find_package(HDF5 QUIET)
 
 if(HDF5_FOUND)
     message(STATUS "Found Hdf5: create Hdf5::Hdf5 interface target")
@@ -18,4 +18,6 @@ if(HDF5_FOUND)
         dl sz z
     )
     add_library(Hdf5::Hdf5 ALIAS ihdf5)
+else()
+    message(STATUS "Hdf5 libs is missing")
 endif()

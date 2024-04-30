@@ -17,6 +17,10 @@ find_package(yaml-cpp CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 find_package(date REQUIRED)
 
+if(HDF5_FOUND)
+    message(STATUS "H5IO is not available since Hdf5 libs is missing")
+endif()
+
 add_library(WCCommon INTERFACE)
 target_include_directories(
     WCCommon
@@ -46,12 +50,12 @@ if(Boost_FOUND)
     target_compile_definitions(
         LogConfig
     INTERFACE
-        SPDLOG_FMT_EXTERNAL_HO
+        SPDLOG_FMT_EXTERNAL
     )
     target_link_libraries(
         LogConfig
     INTERFACE
-        spdlog::spdlog_header_only
+        spdlog::spdlog
         Boost::headers
     )
     add_library(LogConfig::LogConfig ALIAS LogConfig)
