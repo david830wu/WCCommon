@@ -2,9 +2,11 @@
 
 ## Intro
 
-WCCommon is a collection of frequently used functions and tools in HFT development.
+WCCommon is a collection of frequently used functions and tools in HFT development using using C++20 and later.
 
 ## Install
+
+It is recommended to compile using g++-13 or newer compilers.
 
 install WCCommon lib to path ~/opt/WCCommon
 
@@ -12,9 +14,9 @@ install WCCommon lib to path ~/opt/WCCommon
 git clone git@github.com:david830wu/WCCommon.git
 cd WCCommon
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/opt/WCCommon ..
-make
-make install
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j8
+cmake --install . --prefix ~/opt/WCCommon
 
 # add lib install path to cmake search list
 export WCCommon_DIR=~/opt/WCCommon/lib/cmake/WCCommon
@@ -402,6 +404,10 @@ TEST_CASE("Usages", "[DEF_TUPLE]") {
 
 ## Dependencies
 
-1. spdlog: https://github.com/gabime/spdlog.git
-2. yaml-cpp: https://github.com/jbeder/yaml-cpp.git
+1. Catch2: https://github.com/catchorg/Catch2
+2. date: https://github.com/HowardHinnant/date
 3. fmt: https://github.com/fmtlib/fmt.git
+4. libhdf5: https://www.hdfgroup.org/downloads/hdf5
+5. spdlog: https://github.com/gabime/spdlog.git
+6. yaml-cpp: https://github.com/jbeder/yaml-cpp.git
+7. boost: https://www.boost.org
