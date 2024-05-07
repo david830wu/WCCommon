@@ -27,6 +27,7 @@ struct impl {  // make impl a struct so that static members can be inlined and l
         bool operator()(std::string_view sv1, std::string_view sv2) const { return sv1 < sv2; }
     };
 
+    inline static spdlog::logger* default_logger = nullptr;
     inline static std::string s_logger_config_file = "config node";
     inline static boost::container::flat_map<std::string, spdlog::logger, string_less> s_loggers;
     inline static std::ostringstream s_oss;
@@ -149,6 +150,8 @@ inline void config_log(YAML::Node const& cfg) {
        logger.flush_on(spdlog::level::warn);
     }
 
+    internal::impl::default_logger = get_logger("main");
+
     once = true;
 }
 
@@ -214,35 +217,35 @@ protected:
 
 template <typename... Args>
 inline void log_trace(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("main")->trace(fmt, std::forward<Args>(args)...);
+    internal::impl::default_logger->trace(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_debug(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("main")->debug(fmt, std::forward<Args>(args)...);
+    internal::impl::default_logger->debug(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void log_info(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("main")->info(fmt, std::forward<Args>(args)...);
+    internal::impl::default_logger->info(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_warn(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("main")->warn(fmt, std::forward<Args>(args)...);
+    internal::impl::default_logger->warn(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_error(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("main")->error(fmt, std::forward<Args>(args)...);
+    internal::impl::default_logger->error(fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline void log_critical(format_string_t<Args...> fmt, Args &&...args) {
-    get_logger("main")->critical(fmt, std::forward<Args>(args)...);
+    internal::impl::default_logger->critical(fmt, std::forward<Args>(args)...);
 }
 
-inline void log_flush() { get_logger("main")->flush(); }
+inline void log_flush() { internal::impl::default_logger->flush(); }
 
 inline void log_flush_all() {
     for (auto [_, logger] : internal::impl::s_loggers) {
