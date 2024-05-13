@@ -98,22 +98,3 @@ namespace YAML {
         throw std::runtime_error(fmt::format("Cannot find \"{}\" in Node \"{}\"", #key, #node)); \
     }
 
-namespace wcc {
-
-template <typename T = std::string>
-inline T get_field(YAML::Node const& node, std::string const& key, std::string const& node_name = "") {
-    if (YAML::Node key_field = node[key]) {
-        if constexpr (std::is_same_v<T, YAML::Node>)
-            return key_field;
-        try {
-            auto today_str = get_today_str();
-            return render_config_field(key_field.as<T>(), today_str); 
-        } catch(YAML::TypedBadConversion<T>& e) { 
-            throw std::runtime_error(fmt::format("Bad conversion of \"{}\" in Node \"{}\"", key, node_name)); 
-        } 
-    } else { 
-        throw std::runtime_error(fmt::format("Cannot find \"{}\" in Node \"{}\"", key, node_name)); 
-    }
-}
-
-}  // namespace wcc
