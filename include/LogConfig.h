@@ -68,9 +68,10 @@ inline std::chrono::system_clock::duration dur_from_chars(std::string_view dur_s
 
 // Note that every get_logger_str call will clear the underlying string
 inline auto get_logger_str() {
-    auto str_view = internal::impl::s_oss.view();
+    auto str = internal::impl::s_oss.str();
+    internal::impl::s_oss.str("");
     internal::impl::s_oss.seekp(0);
-    return str_view;
+    return str;
 }
 
 inline void config_log(YAML::Node const& cfg) {

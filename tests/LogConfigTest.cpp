@@ -9,6 +9,7 @@
 #include "LogConfig.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 // Struct with an attached logger named "Test"
 TEST_CASE("Logger", "[LogConfig]") {
@@ -55,4 +56,14 @@ TEST_CASE("Logger", "[LogConfig]") {
             "[critical] [main        ] cat is not a fruit\n"
        );
    }
+
+    SECTION("Benchmark") {
+        auto p_logger = wcc::get_logger("main");
+        BENCHMARK("simple log") {
+            p_logger->info("This is a {} message, {}, {}, {}", "debug", 3.14, 314, 314ul);
+            p_logger->info("This is a {} message, {}, {}, {}", "debug", 3.14, 314, 314ul);
+            p_logger->info("This is a {} message, {}, {}, {}", "debug", 3.14, 314, 314ul);
+        };
+    }
+
 }
