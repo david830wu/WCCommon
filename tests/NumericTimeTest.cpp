@@ -49,7 +49,7 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
         std::string now_str = now_time.str();
         std::cout << "Now = " << now_str << std::endl;
     }
-    /*SECTION("Benchmark") {
+    SECTION("Benchmark") {
         BENCHMARK("From int") {
             auto ntime = NumericTime(103159010);
         };
@@ -59,5 +59,5 @@ TEST_CASE("NumericTimeTest", "[NumericTime]") {
         BENCHMARK("From string") {
             auto ntime = NumericTime("10:31:59.010");
         };
-    }*/
+    }
 }
