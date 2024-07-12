@@ -271,6 +271,8 @@ private:
     std::vector<Chunk> chunks_;
 
     inline static std::unique_ptr<ChunkStorage<Chunk>> StoragePtr;
+
+protected:
     inline static uint32_t NumChunks = 1024;
 };
 
