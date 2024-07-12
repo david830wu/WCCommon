@@ -155,11 +155,19 @@ public:
 
     AppendOnlyVec() {
         static_assert((ChunkSize & (ChunkSize-1)) == 0, "ChunkSize must be power of 2");
+        if (!IsConfigured) [[unlikely]] {
+            throw std::logic_error("Construct AppendOnlyVec before calling AppendOnlyVec::config()");
+        }
     }
 
     static void config(size_t n_chunks) {
-        NumChunks = n_chunks;
-        StoragePtr = std::make_unique<ChunkStorage<Chunk>>(NumChunks);
+        if (!IsConfigured) {
+            NumChunks = n_chunks;
+            StoragePtr = std::make_unique<ChunkStorage<Chunk>>(NumChunks);
+            IsConfigured = true;
+        } else {
+            throw std::logic_error("Calling AppendOnlyVec::config multiple times!");
+        }
     }
 
     AppendOnlyVec(AppendOnlyVec const&) = delete;  // copy ctor not allowed
@@ -271,7 +279,7 @@ private:
     std::vector<Chunk> chunks_;
 
     inline static std::unique_ptr<ChunkStorage<Chunk>> StoragePtr;
-
+    inline static bool IsConfigured = false;
 protected:
     inline static uint32_t NumChunks = 1024;
 };

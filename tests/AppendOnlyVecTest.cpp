@@ -15,6 +15,11 @@ TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
     constexpr size_t NUM_CHUNKS = 16;
     using Vec = wcc::AppendOnlyVec<Item, CHUNK_SIZE>; //  NUM_CHUNKS>;
 
+    SECTION("Create Vec before Vec::config throws") {
+        Vec* p_vec;
+        REQUIRE_THROWS_AS((p_vec = new Vec()), std::logic_error);
+    }
+
     SECTION("Init/Appending/Accessing/Iterating") {
         {
             Vec::config(NUM_CHUNKS);
@@ -85,6 +90,13 @@ TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
             REQUIRE(i == vec.size());
         }
     }  // SECTION
+
+    // Already configured before
+    SECTION("Call Vec::config multiple times throws") {
+        REQUIRE_THROWS_AS((Vec::config(20)), std::logic_error);
+        REQUIRE_THROWS_AS((Vec::config(NUM_CHUNKS)), std::logic_error);
+    }
+
 }  // TEST_CASE
 
 
