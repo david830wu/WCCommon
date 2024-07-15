@@ -68,7 +68,7 @@ TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
                 REQUIRE(i == vec[i].i);
             }
 
-            // Accessing element at inddex above vec.size() is undefined, just as std::vector.
+            // Accessing element at index above vec.size() is undefined, just as std::vector.
 
             // Iterator
             int i = 0;

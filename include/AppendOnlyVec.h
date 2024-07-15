@@ -5,14 +5,8 @@
 #if defined(TEST)
 #  include <fmt/format.h>
 #  define MY_ASSERT(cond, msg) if (!(cond)) throw std::runtime_error((msg));
-#  define MY_LOG_CTOR
-#  define MY_LOG_DTOR
 #else
-#  include "HJLogFormat.h"
-#  include <typeinfo>
 #  define MY_ASSERT(cond, msg) assert(cond);
-#  define MY_LOG_CTOR  HJ_TLOG(0, info, "Memory", ("num_chunks:{}", N), ("type:{}", typeid(typename Chunk::value_type).name()));
-#  define MY_LOG_DTOR  HJ_TLOG(0, info, "Memory", ("num_chunks:{}", chunks_.size()), ("type:{}", typeid(typename Chunk::value_type).name()));
 #endif
 
 namespace wcc {
@@ -28,10 +22,11 @@ public:
         for (auto it = chunks_.begin(); it != chunks_.end(); ++it) {
             it->reserve(Chunk::chunk_size);
         }
-        MY_LOG_CTOR
     }
 
-    ~ChunkStorage() { MY_LOG_DTOR }
+    ~ChunkStorage() {}
+
+    size_t num_chunks_allocated() const { return chunks_.size(); }
 
     Chunk& new_chunk() {
         MY_ASSERT(new_curr_ <= chunks_.size(), (fmt::format("new_curr:{} <= N{}", new_curr_, chunks_.size())))
@@ -71,7 +66,7 @@ private:
  * AppendOnlyVec: only appending, never delete, chunked vector.
  *
  * Memory block never be reallocated or moved, only added chunk by chunk,
- * where chunck is size-fixed (and specified) at compiler time.
+ * where chunk is size-fixed (and specified) at compiler time.
  */
 
 template <class Vec, bool IsConst>
@@ -170,6 +165,13 @@ public:
         }
     }
 
+    static size_t num_chunks_allocated() {
+        if (IsConfigured) [[likely]] {
+            return StoragePtr->num_chunks_allocated();
+        }
+        throw std::logic_error("Must call AppendOnlyVec::config first!");
+    }
+
     AppendOnlyVec(AppendOnlyVec const&) = delete;  // copy ctor not allowed
 
     AppendOnlyVec(AppendOnlyVec&& o) {
@@ -184,6 +186,8 @@ public:
             StoragePtr->return_chunk(c);
         }
     }
+
+    AppendOnlyVec& operator = (AppendOnlyVec const&) = delete;
 
     AppendOnlyVec& operator = (AppendOnlyVec&& o) {
         clear();
