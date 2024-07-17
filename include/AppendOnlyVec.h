@@ -27,6 +27,7 @@ public:
     ~ChunkStorage() {}
 
     size_t num_chunks_allocated() const { return chunks_.size(); }
+    size_t water_mark() const { return new_curr_; }
 
     Chunk& new_chunk() {
         MY_ASSERT(new_curr_ <= chunks_.size(), (fmt::format("new_curr:{} <= N{}", new_curr_, chunks_.size())))
@@ -171,6 +172,8 @@ public:
         }
         throw std::logic_error("Must call AppendOnlyVec::config first!");
     }
+
+    static size_t water_mark() { return StoragePtr->water_mark(); }
 
     AppendOnlyVec(AppendOnlyVec const&) = delete;  // copy ctor not allowed
 
