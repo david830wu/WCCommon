@@ -66,7 +66,7 @@ inline YAML::Node load_full_config(std::string const& cfg_file, Replacements con
     if (!std::filesystem::exists(cfg_path))
         throw std::runtime_error(fmt::format("file {} does not exist", cfg_path.c_str()));
 
-    std::cout << "Loading " << cfg_path.native() << '\n';
+    fmt::print("Loading {}\n", cfg_path.native());
     auto node = YAML::LoadFile(cfg_path.native());
     load_full_config(node, replacements, cfg_root, path);
     return node;
@@ -79,5 +79,5 @@ inline YAML::Node load_full_config(std::string const& cfg_file, Replacements con
  */
 // int main() {
 //     auto cfg = load_full_config("Config/ManualWCTraderConfig.yaml", std::array{std::pair{"today", "20230927"}});
-//     std::cout << cfg << '\n';
+//     fmt::print("{}\n", cfg);
 // }
