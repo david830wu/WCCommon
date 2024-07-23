@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LogConfig.h"  // for wcc::log_debug
 #include <vector>
 
 #if defined(TEST)
@@ -44,6 +45,7 @@ public:
             chunks_.emplace_back();
             new_curr_ = chunks_.size() - 1;
             chunks_[new_curr_].reserve(Chunk::chunk_size);
+            wcc::log_debug("ChunkStorage::new_chunk: chunk_size:{}, current num of chunks:{}", Chunk::chunk_size, new_curr_);
         }
         return chunks_[new_curr_++]; // for moving
     }
