@@ -5,7 +5,22 @@
 #include <thread>
 #include <chrono>
 
+YAML::Node cfg = YAML::Load(R"(
+    default_format : "[%-8l] [%-12n] %v"
+    default_level : "error"
+    default_log_dir : "log"
+    default_log_prefix: "test"
+    sinks:
+    - stdout
+    loggers:
+    - main
+    set_error_loggers:
+    set_debug_loggers:
+)");
+
+
 TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
+    wcc::config_log(cfg);
 
     struct Item {
         int i;
@@ -97,6 +112,20 @@ TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
         REQUIRE_THROWS_AS((Vec::config(NUM_CHUNKS)), std::logic_error);
     }
 
+    SECTION("Multithreading") {
+        using ThVec = wcc::AppendOnlyVec<int, CHUNK_SIZE>;
+        ThVec::config(10);  // After 10 * CHUNK_SIZE, dynamic new
+
+        auto run = [&](int count) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            ThVec vec;
+            for (auto i = 0; i < count; ++i) vec.push_back(i);
+        };
+
+        for (int i = 0; i < 100; ++i) {
+            std::jthread(run, 10000000);
+        }
+    }
 }  // TEST_CASE
 
 
@@ -108,9 +137,11 @@ using Vector = wcc::AppendOnlyVec<double, CHUNK_SIZE>;
 using VectorTS = wcc::AppendOnlyVec<uint32_t, CHUNK_SIZE>;
 
 TEST_CASE("TransBookDefinition", "TransBook") {
+    wcc::config_log(cfg);
+
     // The sleep for us to monitor memory usage via
     //   top -p $(ps -a | grep AppendOnlyVec | awk -e'{print $1}')
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    //std::this_thread::sleep_for(std::chrono::seconds(5));
 
     struct TransactionBook {
         VectorTS   timestamp;     // 0.5GB
@@ -130,7 +161,7 @@ TEST_CASE("TransBookDefinition", "TransBook") {
     VectorTS::config(NUM_CHUNKS/8);
     TransactionBook tb;
 
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    //std::this_thread::sleep_for(std::chrono::seconds(5));
 
     for (auto i = 0u; i < 100000000u; ++i) {
         tb.timestamp.push_back(i);
@@ -150,3 +181,4 @@ TEST_CASE("TransBookDefinition", "TransBook") {
         REQUIRE_THAT(tb.trade_price[i], Catch::Matchers::WithinAbs(i*3.14, 1e-10));
     }
 }
+

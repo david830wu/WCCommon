@@ -2,6 +2,7 @@
 
 #include "LogConfig.h"  // for wcc::log_debug
 #include <vector>
+#include <atomic>
 
 #if defined(TEST)
 #  include <fmt/format.h>
@@ -11,6 +12,14 @@
 #endif
 
 namespace wcc {
+
+struct SpinLock {
+    std::atomic_bool& locked;
+    SpinLock(std::atomic_bool& locked) : locked(locked) {
+        for (bool expected = false; !locked.compare_exchange_strong(expected, true); expected = false);
+    }
+    ~SpinLock() { locked = false; }
+};
 
 // ChunkStorage is not intended for outside
 template <typename Chunk>
@@ -31,6 +40,8 @@ public:
     size_t water_mark() const { return new_curr_; }
 
     Chunk& new_chunk() {
+        SpinLock lock(is_newing_);
+
         MY_ASSERT(new_curr_ <= chunks_.size(), (fmt::format("new_curr:{} <= N{}", new_curr_, chunks_.size())))
         if (new_curr_ == chunks_.size()) new_curr_ = 0;
 
@@ -59,6 +70,7 @@ public:
     }
 
 private:
+    std::atomic_bool is_newing_ = false;
     size_type new_curr_;
     size_type return_curr_;
     std::vector<Chunk> chunks_;
