@@ -56,12 +56,14 @@ public:
             chunks_.emplace_back();
             new_curr_ = chunks_.size() - 1;
             chunks_[new_curr_].reserve(Chunk::chunk_size);
-            wcc::log_debug("ChunkStorage::new_chunk: chunk_size:{}, current num of chunks:{}", Chunk::chunk_size, new_curr_);
+            wcc::log_debug("ChunkStorage::new_chunk: chunk_size:{}, current num of chunks:{}", Chunk::chunk_size, new_curr_+1);
         }
         return chunks_[new_curr_++]; // for moving
     }
 
     void return_chunk(Chunk& chunk) {
+        SpinLock lock(is_returning_);
+
         if (return_curr_ == chunks_.size()) return_curr_ = 0;
         MY_ASSERT(chunks_[return_curr_].capacity() == 0,
           (fmt::format("chunks_[return_curr_({})].capaticy()=={}, expected 0", return_curr_, chunks_[return_curr_].capacity())));  // current place is no used by any chunk
@@ -74,6 +76,7 @@ private:
     size_type new_curr_;
     size_type return_curr_;
     std::vector<Chunk> chunks_;
+    std::atomic_bool is_returning_ = false;
 };
 
 
@@ -276,13 +279,13 @@ public:
     template <typename... Args>
     reference emplace_back(Args&&... args) {
         if (chunks_.size() == 0) new_chunk();                                 // there nothing, add a new chunk
-        if (chunks_[last_chunk_idx_].size() == ChunkSize) ++last_chunk_idx_; // current chunk full, move to next
+        if (chunks_[last_chunk_idx_].size() == ChunkSize) ++last_chunk_idx_;  // current chunk full, move to next
         if (chunks_.size() == last_chunk_idx_) new_chunk();                   // there's no next chunk, add a new one
         chunks_[last_chunk_idx_].emplace_back(std::forward<Args>(args)...);
         return chunks_[last_chunk_idx_].back();
     }
 
-private:
+protected:
     void new_chunk() {
         chunks_.emplace_back(std::move(StoragePtr->new_chunk()));
     }
@@ -301,7 +304,6 @@ private:
 
     inline static std::unique_ptr<ChunkStorage<Chunk>> StoragePtr;
     inline static bool IsConfigured = false;
-protected:
     inline static uint32_t NumChunks = 1024;
 };
 
