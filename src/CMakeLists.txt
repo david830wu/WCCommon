@@ -17,7 +17,7 @@ find_package(yaml-cpp CONFIG REQUIRED)
 find_package(fmt REQUIRED)
 find_package(date REQUIRED)
 
-if(HDF5_FOUND)
+if(NOT HDF5_FOUND)
     message(STATUS "H5IO is not available since Hdf5 libs is missing")
 endif()
 
