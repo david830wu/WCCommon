@@ -25,6 +25,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 find_package(Boost QUIET)
+if(Boost_FOUND)
+    message(STATUS "Find Boost " ${Boost_VERSION} " in " ${Boost_INCLUDE_DIRS})
+    # override system boost versions may exist under /usr/include:/usr/local/include
+    set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
+    include_directories(BEFORE "${Boost_INCLUDE_DIRS}")
+else()
+    message(STATUS "Failed to find Boost")
+endif()
 
 include(${CMAKE_SOURCE_DIR}/cmake/FindHdf5.cmake)
 
