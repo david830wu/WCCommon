@@ -41,6 +41,7 @@ static inline void load_full_config(YAML::Node& node, Replacements const& replac
             for (auto& [k, v] : replacements) {
                 str = std::regex_replace(str, std::regex(std::string("\\$\\{") + k + "\\}"), v);
             }
+            str = std::regex_replace(str, std::regex(std::string("\\$\\{cfg_root\\}")), cfg_root);
             node = str;
         }
     } // else other type to process; to be added in the future
