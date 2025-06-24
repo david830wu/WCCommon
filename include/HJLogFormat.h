@@ -9,11 +9,11 @@
  *   "main" logger (if outside a class).
  *
  * - HJ_TLOG: Similar to HJ_LOG, but also includes the trader ID information as [tid]
- *   if the current class has an id() method, or [-] if not.
+ *   if the current class has a trader_id() method, or [-] if not.
  *
  * - HJ_LOG_ID: Logs a message with a given level, event name, and format-value pairs.
- *   It includes the ID information (output as [id]) given as the 4th macro parameter.
- *   This is used when the ID cannot be obtained through the this->id() call but exists
+ *   It includes the ID information (output as [trader_id]) given as the 4th macro parameter.
+ *   This is used when the ID cannot be obtained through the this->trader_id() call but exists
  *   and needs to be output.
  *
  * The file also provides the VAR() macro, which is a helper macro for formatting variables
@@ -69,8 +69,8 @@
 // Format of HJ_TLOG:
 //   [function name] [event name] {information}
 #define HJ_THIS(is_method)   BOOST_PP_IF(is_method, this->, wcc::)
-#define HJ_HAS_ID(is_method) BOOST_PP_IF(is_method, wcc::internal::has_id<decltype(this)>::value, false)
-#define HJ_ID(is_method)     BOOST_PP_IF(is_method, wcc::internal::id(this), '-') // the '-' is used when there is no id
+#define HJ_HAS_ID(is_method) BOOST_PP_IF(is_method, wcc::internal::has_trader_id<decltype(this)>::value, false)
+#define HJ_ID(is_method)     BOOST_PP_IF(is_method, wcc::internal::trader_id(this), '-') // the '-' is used when there is no id
 
 /**
  * HJ_LOG macro for formatted output with a given level, event, and format-value pairs.
@@ -87,8 +87,8 @@
 /**
  * HJ_TLOG macro for formatted output with a given level, event, and format-value pairs.
  * It uses the logger attached to the current class (is_method == 1) or the "main" logger (is_method == 0).
- * It also includes trader id information as [tid] if the current class has an id() method, or [-] if not.
- * Note that is_method == 0 means no id() is available (since there's no class/object).
+ * It also includes trader id information as [tid] if the current class has a trader_id() method, or [-] if not.
+ * Note that is_method == 0 means no trader_id() is available (since there's no class/object).
  */
 #define HJ_TLOG(is_method, level, event, ...) {                                                           \
     constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
@@ -110,13 +110,13 @@
  * It uses the logger attached to the current class (is_method == 1) or the "main" logger (is_method == 0).
  * It includes the id information (output as [id]) given as the 4th macro parameter.
  *
- * Used in cases where the id cannot be obtained through the this->id() call but does exist and needs to be output.
+ * Used in cases where the id cannot be obtained through the this->trader_id() call but does exist and needs to be output.
  */
-#define HJ_LOG_ID(is_method, level, event, id, ...) {                                                     \
+#define HJ_LOG_ID(is_method, level, event, trader_id, ...) {                                                     \
     constexpr auto fun_name = ::wcc::get_source_function_name(std::source_location::current());           \
     HJ_THIS(is_method)log_##level("[{:16.16s}] [{:12.12s}] [{}] {{"                                       \
         BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_FORMAT_STR, BOOST_PP_EMPTY)(__VA_ARGS__) \
-        "}}", fun_name, event, id                                                                         \
+        "}}", fun_name, event, trader_id                                                                         \
         BOOST_PP_IF(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), COLLECT_VAR, BOOST_PP_EMPTY)(__VA_ARGS__));      \
 }
 

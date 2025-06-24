@@ -33,11 +33,11 @@ struct impl {  // make impl a struct so that static members can be inlined and l
 };  // struct impl
 
 // T must be a pointer (since it is used as has_id<this> for now)
-template <typename T, typename = void> struct has_id : std::false_type {};
-template <typename T> struct has_id<T, std::void_t<decltype((*std::declval<T>()).id())>> : std::true_type {};
+template <typename T, typename = void> struct has_trader_id : std::false_type {};
+template <typename T> struct has_trader_id<T, std::void_t<decltype((*std::declval<T>()).trader_id())>> : std::true_type {};
 template <typename T>
-auto id(const T* t) {
-    if constexpr (has_id<const T*>::value) return t->id();
+auto trader_id(const T* t) {
+    if constexpr (has_trader_id<const T*>::value) return t->trader_id();
     else return 0; // doesn't matter what returns (both type and value) here since it will be discarded by compiler
 }
 
