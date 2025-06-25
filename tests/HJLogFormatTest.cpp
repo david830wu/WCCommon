@@ -9,6 +9,7 @@
 */
 
 #include "LogConfig.h"
+#define FUN_EVT_FORMAT_STR "[{:16.16s}] [{:12.12s}] " // unittests are written based on this format
 #include "HJLogFormat.h"
 
 #include <catch2/catch_test_macros.hpp>
