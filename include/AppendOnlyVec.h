@@ -126,7 +126,7 @@ public:
 
     // Comparison operators
     friend bool operator==(const VecIterator& l, const VecIterator& r) { return l.idx_ == r.idx_; }
-    friend auto operator<=>(const VecIterator& l, const VecIterator& r) { return l.idx <=> r.idx_; }
+    friend auto operator<=>(const VecIterator& l, const VecIterator& r) { return l.idx_ <=> r.idx_; }
 
 private:
     size_type idx_;
