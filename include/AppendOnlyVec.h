@@ -1,8 +1,14 @@
 #pragma once
 
-#include "LogConfig.h"  // for wcc::log_debug
-#include <vector>
 #include <atomic>
+#include <cassert>
+#include <cstdint>
+#include <iterator>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #if defined(TEST)
 #  include <fmt/format.h>
@@ -56,7 +62,8 @@ public:
             chunks_.emplace_back();
             new_curr_ = chunks_.size() - 1;
             chunks_[new_curr_].reserve(Chunk::chunk_size);
-            wcc::log_debug("ChunkStorage::new_chunk: chunk_size:{}, current num of chunks:{}", Chunk::chunk_size, new_curr_);
+            // Overflow beyond the configured pool is observable via
+            // AppendOnlyVec::num_chunks_allocated() > configured chunk count.
         }
         return chunks_[new_curr_++]; // for moving
     }

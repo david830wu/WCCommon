@@ -5,23 +5,7 @@
 #include <thread>
 #include <chrono>
 
-YAML::Node cfg = YAML::Load(R"(
-    default_format : "[%-8l] [%-12n] %v"
-    default_level : "error"
-    default_log_dir : "log"
-    default_log_prefix: "test"
-    sinks:
-    - stdout
-    loggers:
-    - main
-    set_error_loggers:
-    set_debug_loggers:
-)");
-
-
 TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
-    wcc::config_log(cfg);
-
     struct Item {
         int i;
     };
@@ -52,10 +36,13 @@ TEST_CASE("AppendOnlyVec", "[AppendOnlyVec]") {
             // Further emplace_back or push_back will cause throwing exception
             // REQUIRE_THROWS(vec.push_back(Item{888}));
             // REQUIRE_THROWS(vec.emplace_back(Item{888}));
+            REQUIRE(Vec::num_chunks_allocated() == NUM_CHUNKS);
             vec.push_back(Item{888});
             REQUIRE(vec.size() == CHUNK_SIZE * NUM_CHUNKS + 1);
             vec.emplace_back(Item{888});
             REQUIRE(vec.size() == CHUNK_SIZE * NUM_CHUNKS + 2);
+            // Pool exhausted: storage grew by one emergency chunk
+            REQUIRE(Vec::num_chunks_allocated() == NUM_CHUNKS + 1);
         }
 
         // Previouse vec out of scope and chunks returned back to storage
@@ -137,8 +124,6 @@ using Vector = wcc::AppendOnlyVec<double, CHUNK_SIZE>;
 using VectorTS = wcc::AppendOnlyVec<uint32_t, CHUNK_SIZE>;
 
 TEST_CASE("TransBookDefinition", "TransBook") {
-    wcc::config_log(cfg);
-
     // The sleep for us to monitor memory usage via
     //   top -p $(ps -a | grep AppendOnlyVec | awk -e'{print $1}')
     //std::this_thread::sleep_for(std::chrono::seconds(5));

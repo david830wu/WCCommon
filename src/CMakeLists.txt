@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 project(WCCommonLib
-        VERSION 1.7.0
+        VERSION 1.7.3
         DESCRIPTION "WCCommon"
         LANGUAGES C CXX
 )
