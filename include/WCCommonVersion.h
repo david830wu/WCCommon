@@ -5,5 +5,5 @@
 
 #pragma once
 
-#define WCCOMMON_VERSION         "1.7.2"
-#define WCCOMMON_VERSION_MESSAGE "Add config.h which originally is in Repo of WCTrader"
+#define WCCOMMON_VERSION         "1.7.3"
+#define WCCOMMON_VERSION_MESSAGE "AppendOnlyVec no longer depends on LogConfig/spdlog"
